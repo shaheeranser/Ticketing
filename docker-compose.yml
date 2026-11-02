@@ -81,6 +81,7 @@ services:
       ADMIN_USERNAME: ${ADMIN_USERNAME:-admin}
       ADMIN_PASSWORD: ${ADMIN_PASSWORD:-SufiNight2026!}
     ports:
+      - "80:3000"
       - "${PORT:-3000}:3000"
     depends_on:
       postgres:
