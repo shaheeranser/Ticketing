@@ -1,0 +1,105 @@
+# ==============================================================================
+# MEHFIL-E-SAMA QAWWALI TICKETING - DOCKER COMPOSE ORCHESTRATION
+# Services:
+#   1. app: Node.js Express Application Server & REST API
+#   2. postgres: PostgreSQL 16 Alpine Relational Database
+#   3. minio: MinIO High-Performance S3 Object Storage
+# ==============================================================================
+
+services:
+  # ----------------------------------------------------------------------------
+  # 1. PostgreSQL Database Service
+  # ----------------------------------------------------------------------------
+  postgres:
+    image: postgres:16-alpine
+    container_name: mehfil_postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgres123}
+      POSTGRES_DB: ${POSTGRES_DB:-eventpass_db}
+    ports:
+      - "${POSTGRES_PORT:-5432}:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-postgres} -d ${POSTGRES_DB:-eventpass_db}"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    networks:
+      - mehfil_network
+
+  # ----------------------------------------------------------------------------
+  # 2. MinIO S3-Compatible Object Storage Service
+  # ----------------------------------------------------------------------------
+  minio:
+    image: minio/minio:latest
+    container_name: mehfil_minio
+    restart: unless-stopped
+    command: server /data --console-address ":9001"
+    environment:
+      MINIO_ROOT_USER: ${MINIO_ROOT_USER:-minioadmin}
+      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD:-minioadmin123}
+    ports:
+      - "${MINIO_PORT:-9000}:9000"
+      - "9001:9001"
+    volumes:
+      - miniodata:/data
+    networks:
+      - mehfil_network
+
+  # ----------------------------------------------------------------------------
+  # 3. Node.js Express Application Service
+  # ----------------------------------------------------------------------------
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: mehfil_app
+    restart: unless-stopped
+    env_file:
+      - .env
+    environment:
+      PORT: 3000
+      POSTGRES_HOST: postgres
+      POSTGRES_PORT: 5432
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgres123}
+      POSTGRES_DB: ${POSTGRES_DB:-eventpass_db}
+      MINIO_ENDPOINT: minio
+      MINIO_PORT: 9000
+      MINIO_USE_SSL: "false"
+      MINIO_ROOT_USER: ${MINIO_ROOT_USER:-minioadmin}
+      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD:-minioadmin123}
+      MINIO_BUCKET: ${MINIO_BUCKET:-payment-receipts}
+      SMTP_HOST: ${SMTP_HOST:-smtp.gmail.com}
+      SMTP_PORT: ${SMTP_PORT:-587}
+      SMTP_USER: ${SMTP_USER:-your_email@gmail.com}
+      SMTP_PASS: ${SMTP_PASS:-your_16_digit_app_password}
+      EMAIL_FROM: ${EMAIL_FROM:-"Mehfil-e-Sama Invitations <your_email@gmail.com>"}
+      ADMIN_USERNAME: ${ADMIN_USERNAME:-admin}
+      ADMIN_PASSWORD: ${ADMIN_PASSWORD:-SufiNight2026!}
+    ports:
+      - "${PORT:-3000}:3000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      minio:
+        condition: service_started
+    networks:
+      - mehfil_network
+
+# ==============================================================================
+# PERSISTENT VOLUMES & ISOLATED NETWORK
+# ==============================================================================
+volumes:
+  pgdata:
+    name: mehfil_pgdata
+  miniodata:
+    name: mehfil_miniodata
+
+networks:
+  mehfil_network:
+    name: mehfil_network
+    driver: bridge

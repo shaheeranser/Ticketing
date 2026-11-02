@@ -1,0 +1,30 @@
+# Node dependencies
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Environment and sensitive keys
+.env
+*.local
+
+# Keep .env.example tracked
+!.env.example
+
+# File uploads and local storage
+uploads/
+*.xlsx
+*.csv
+
+# Python caches and artifacts
+__pycache__/
+*.py[cod]
+*$py.class
+.venv/
+venv/
+.streamlit/
+
+# OS and system files
+.DS_Store
+Thumbs.db
+*.log

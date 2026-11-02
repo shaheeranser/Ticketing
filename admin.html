@@ -1,0 +1,411 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Portal • محفلِ سماع Mehfil-e-Sama Secretariat</title>
+
+  <!-- Google Fonts: Cinzel, Amiri, Plus Jakarta Sans, JetBrains Mono -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Amiri:ital,wght@0,400;0,700;1,400&family=Cinzel:wght@600;700;800;900&family=JetBrains+Mono:wght@500;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+  <!-- FontAwesome 6 Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+  <!-- Html5Qrcode Scanner Library for Gate Check-in -->
+  <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
+
+  <!-- Stylesheet -->
+  <link rel="stylesheet" href="style.css">
+
+  <style>
+    /* Admin specific adjustments */
+    .admin-container {
+      max-width: 1380px;
+      margin: 0 auto;
+      padding: 25px 20px 60px 20px;
+    }
+
+    .admin-topbar {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 15px;
+      padding-bottom: 20px;
+      margin-bottom: 25px;
+      border-bottom: 1px solid var(--border-gold);
+    }
+
+    .admin-stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 16px;
+      margin-bottom: 30px;
+    }
+
+    .stat-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-gold);
+      border-radius: var(--radius-md);
+      padding: 20px;
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      backdrop-filter: blur(10px);
+    }
+
+    .stat-icon {
+      width: 48px;
+      height: 48px;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 20px;
+    }
+
+    .stat-val {
+      font-size: 26px;
+      font-weight: 800;
+      color: #ffffff;
+      font-family: var(--font-mono);
+    }
+
+    .stat-label {
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: var(--text-muted);
+    }
+
+    /* Filter & Search Bar */
+    .table-controls {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 15px;
+      margin-bottom: 20px;
+    }
+
+    .filter-tabs {
+      display: flex;
+      gap: 8px;
+      background: rgba(0, 0, 0, 0.4);
+      padding: 4px;
+      border-radius: var(--radius-sm);
+      border: 1px solid var(--border-subtle);
+    }
+
+    .filter-btn {
+      background: transparent;
+      border: none;
+      color: var(--text-secondary);
+      padding: 6px 14px;
+      font-size: 13px;
+      font-weight: 600;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .filter-btn.active {
+      background: var(--gold-gradient);
+      color: var(--bg-primary);
+    }
+
+    /* Table */
+    .table-responsive {
+      overflow-x: auto;
+      background: var(--bg-card);
+      border: 1px solid var(--border-gold);
+      border-radius: var(--radius-md);
+      box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+    }
+
+    .admin-table {
+      width: 100%;
+      border-collapse: collapse;
+      text-align: left;
+      font-size: 13px;
+    }
+
+    .admin-table th {
+      background: rgba(6, 11, 20, 0.95);
+      color: var(--gold-light);
+      font-family: var(--font-serif);
+      font-weight: 700;
+      padding: 14px 16px;
+      border-bottom: 1px solid var(--border-gold);
+      white-space: nowrap;
+    }
+
+    .admin-table td {
+      padding: 14px 16px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+      color: var(--text-secondary);
+      vertical-align: middle;
+    }
+
+    .admin-table tr:hover {
+      background: rgba(212, 175, 55, 0.04);
+    }
+
+    .table-thumb {
+      width: 44px;
+      height: 44px;
+      border-radius: 6px;
+      object-fit: cover;
+      cursor: pointer;
+      border: 1px solid var(--border-gold);
+      transition: transform 0.2s;
+    }
+    .table-thumb:hover { transform: scale(1.15); }
+
+    .action-btn-group {
+      display: flex;
+      gap: 6px;
+      white-space: nowrap;
+    }
+
+    .btn-action {
+      padding: 6px 10px;
+      border-radius: 6px;
+      font-size: 11px;
+      font-weight: 700;
+      cursor: pointer;
+      border: none;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      transition: all 0.2s;
+    }
+
+    .btn-action-approve {
+      background: #059669;
+      color: #ffffff;
+    }
+    .btn-action-approve:hover { background: #10b981; }
+
+    .btn-action-decline {
+      background: #dc2626;
+      color: #ffffff;
+    }
+    .btn-action-decline:hover { background: #ef4444; }
+
+    .btn-action-resend {
+      background: rgba(212, 175, 55, 0.2);
+      border: 1px solid var(--border-gold);
+      color: var(--gold-light);
+    }
+    .btn-action-resend:hover { background: var(--gold-primary); color: #060b14; }
+
+    /* Login View */
+    .login-container {
+      max-width: 440px;
+      margin: 90px auto;
+      background: var(--bg-card);
+      border: 1px solid var(--border-gold);
+      border-radius: var(--radius-lg);
+      padding: 40px 30px;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.8);
+      text-align: center;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- =========================================================================
+       VIEW 1: ADMIN LOGIN
+       ========================================================================= -->
+  <div id="view-login" class="login-container">
+    <div style="font-size: 40px; color: var(--gold-primary); margin-bottom: 6px;">✦</div>
+    <div class="hero-urdu-title" style="font-size: 32px; margin-bottom: 4px;">محفلِ سماع</div>
+    <h2 class="font-serif" style="color: var(--gold-light); font-size: 20px; margin-bottom: 8px;">Secretariat Admin Gateway</h2>
+    <p style="font-size: 13px; color: var(--text-muted); margin-bottom: 25px;">Enter your credentials to access attendee passes, approval dispatch, and gate check-in.</p>
+
+    <form id="admin-login-form" onsubmit="handleAdminLogin(event)">
+      <div class="form-group" style="text-align: left; margin-bottom: 16px;">
+        <label class="form-label" for="admin-user"><i class="fa-solid fa-user-shield text-gold"></i> Username</label>
+        <input type="text" id="admin-user" class="form-input" required placeholder="e.g. admin">
+      </div>
+
+      <div class="form-group" style="text-align: left; margin-bottom: 24px;">
+        <label class="form-label" for="admin-pass"><i class="fa-solid fa-lock text-gold"></i> Password</label>
+        <input type="password" id="admin-pass" class="form-input" required placeholder="••••••••">
+      </div>
+
+      <button type="submit" class="btn-primary" id="btn-login" style="padding: 14px;">
+        <i class="fa-solid fa-arrow-right-to-bracket"></i> Sign In to Secretariat
+      </button>
+
+      <div id="login-error" style="color: #f43f5e; font-size: 13px; margin-top: 15px; display: none;"></div>
+    </form>
+  </div>
+
+  <!-- =========================================================================
+       VIEW 2: ADMIN DASHBOARD
+       ========================================================================= -->
+  <div id="view-dashboard" class="admin-container" style="display: none;">
+    <!-- Topbar -->
+    <div class="admin-topbar">
+      <div>
+        <div style="display: flex; align-items: center; gap: 10px;">
+          <span style="font-family: var(--font-urdu); font-size: 24px; color: var(--gold-light);">محفلِ سماع</span>
+          <span class="font-serif" style="font-size: 18px; font-weight: 700; color: #ffffff;">Secretariat Portal</span>
+        </div>
+        <div style="font-size: 12px; color: var(--text-muted);">
+          Signed in as: <strong id="admin-display-name" style="color: var(--gold-light);">Organizer</strong>
+        </div>
+      </div>
+
+      <div style="display: flex; gap: 10px; align-items: center;">
+        <button type="button" class="btn-secondary" onclick="openGateScannerModal()">
+          <i class="fa-solid fa-camera"></i> Gate QR Scanner
+        </button>
+        <button type="button" class="btn-secondary" onclick="exportRegistrationsCsv()">
+          <i class="fa-solid fa-file-csv"></i> Export CSV
+        </button>
+        <button type="button" class="btn-secondary" style="border-color: #f43f5e; color: #fda4af;" onclick="handleAdminLogout()">
+          <i class="fa-solid fa-power-off"></i> Logout
+        </button>
+      </div>
+    </div>
+
+    <!-- Stats KPI Cards -->
+    <div class="admin-stats-grid">
+      <div class="stat-card">
+        <div class="stat-icon" style="background: rgba(212, 175, 55, 0.15); color: var(--gold-light);">
+          <i class="fa-solid fa-ticket"></i>
+        </div>
+        <div>
+          <div class="stat-val" id="stat-total">0</div>
+          <div class="stat-label">Total Passes</div>
+        </div>
+      </div>
+
+      <div class="stat-card" style="border-color: rgba(245, 158, 11, 0.4);">
+        <div class="stat-icon" style="background: rgba(245, 158, 11, 0.15); color: #f59e0b;">
+          <i class="fa-solid fa-clock-rotate-left"></i>
+        </div>
+        <div>
+          <div class="stat-val" id="stat-pending" style="color: #fcd34d;">0</div>
+          <div class="stat-label">Pending Verifications</div>
+        </div>
+      </div>
+
+      <div class="stat-card" style="border-color: rgba(16, 185, 129, 0.4);">
+        <div class="stat-icon" style="background: rgba(16, 185, 129, 0.15); color: var(--emerald-bright);">
+          <i class="fa-solid fa-circle-check"></i>
+        </div>
+        <div>
+          <div class="stat-val" id="stat-approved" style="color: #6ee7b7;">0</div>
+          <div class="stat-label">Confirmed & Emailed</div>
+        </div>
+      </div>
+
+      <div class="stat-card" style="border-color: rgba(59, 130, 246, 0.4);">
+        <div class="stat-icon" style="background: rgba(59, 130, 246, 0.15); color: #60a5fa;">
+          <i class="fa-solid fa-door-open"></i>
+        </div>
+        <div>
+          <div class="stat-val" id="stat-scanned" style="color: #93c5fd;">0</div>
+          <div class="stat-label">Checked-In at Gate</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Table Controls (Filters & Search) -->
+    <div class="table-controls">
+      <div class="filter-tabs">
+        <button class="filter-btn active" onclick="setFilter('All', this)">All Passes</button>
+        <button class="filter-btn" onclick="setFilter('Pending', this)">Pending</button>
+        <button class="filter-btn" onclick="setFilter('Approved', this)">Approved</button>
+        <button class="filter-btn" onclick="setFilter('Declined', this)">Declined</button>
+      </div>
+
+      <div style="display: flex; gap: 10px; flex: 1; max-width: 450px;">
+        <input type="text" id="admin-search-input" class="form-input" placeholder="Search by Name, CNIC, Ticket ID, Trans ID..." oninput="handleSearchInput(event)">
+        <button type="button" class="btn-secondary" onclick="loadEntries(true)" title="Refresh Table">
+          <i class="fa-solid fa-rotate"></i>
+        </button>
+      </div>
+    </div>
+
+    <!-- Attendees Table -->
+    <div class="table-responsive">
+      <table class="admin-table">
+        <thead>
+          <tr>
+            <th>Ticket Code</th>
+            <th>Attendee Details</th>
+            <th>CNIC / Contact</th>
+            <th>Tier & Fee</th>
+            <th>Receipt Proof</th>
+            <th>Status</th>
+            <th>Gate Entry</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody id="entries-tbody">
+          <tr>
+            <td colspan="8" style="text-align: center; padding: 30px; color: var(--gold-light);">Loading registrations...</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- =========================================================================
+       MODAL 1: RECEIPT PROOF VIEWER
+       ========================================================================= -->
+  <div class="modal-overlay" id="receipt-modal">
+    <div class="modal-content" style="max-width: 700px; text-align: center;">
+      <button class="modal-close-btn" onclick="closeReceiptModal()">&times;</button>
+      <h3 class="font-serif" style="color: var(--gold-light); margin-bottom: 15px;">Payment Receipt Verification</h3>
+      <div style="background: #000000; border-radius: 8px; padding: 10px; max-height: 480px; overflow: auto;">
+        <img id="modal-receipt-img" src="" alt="Payment Receipt" style="max-width: 100%; border-radius: 6px;">
+      </div>
+      <div id="modal-receipt-meta" style="margin-top: 15px; font-size: 13px; color: var(--text-secondary); text-align: left;"></div>
+      <div style="margin-top: 20px; display: flex; justify-content: flex-end; gap: 10px;">
+        <button type="button" class="btn-secondary" onclick="closeReceiptModal()">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- =========================================================================
+       MODAL 2: GATE QR SCANNER
+       ========================================================================= -->
+  <div class="modal-overlay" id="scanner-modal">
+    <div class="modal-content" style="max-width: 550px; text-align: center;">
+      <button class="modal-close-btn" onclick="closeGateScannerModal()">&times;</button>
+      <div style="font-size: 32px; color: var(--emerald-bright); margin-bottom: 8px;">
+        <i class="fa-solid fa-qrcode"></i>
+      </div>
+      <h3 class="font-serif" style="color: var(--gold-light); margin-bottom: 6px;">Gate Admission QR Scanner</h3>
+      <p style="font-size: 12px; color: var(--text-muted); margin-bottom: 16px;">
+        Point your camera at attendee's E-Pass QR code, or manually enter the Ticket ID.
+      </p>
+
+      <!-- Video Scanner Container -->
+      <div id="qr-reader-container" style="width: 100%; max-width: 380px; margin: 0 auto; border-radius: 8px; overflow: hidden; border: 1px solid var(--border-gold);"></div>
+
+      <!-- Manual Ticket ID Input Fallback -->
+      <div style="margin-top: 16px;">
+        <div class="input-with-button">
+          <input type="text" id="manual-ticket-input" class="form-input" placeholder="e.g. SAMA-1A2B3C">
+          <button type="button" class="btn-secondary" onclick="validateManualTicket()">Validate</button>
+        </div>
+      </div>
+
+      <!-- Result Banner -->
+      <div id="scan-result-banner" style="display: none; margin-top: 16px; padding: 14px; border-radius: 8px; text-align: left; font-size: 13px;"></div>
+    </div>
+  </div>
+
+  <!-- Admin Controller Script -->
+  <script src="admin.js"></script>
+</body>
+</html>

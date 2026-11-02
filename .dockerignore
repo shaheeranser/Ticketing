@@ -1,0 +1,12 @@
+node_modules
+npm-debug.log*
+.git
+.gitignore
+*.md
+uploads
+*.xlsx
+.streamlit
+__pycache__
+*.py
+*.py.bak
+requirements.txt
