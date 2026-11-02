@@ -25,6 +25,7 @@ app.use(express.urlencoded({ extended: true }));
 
 // Serve frontend static assets from public/ directory
 app.use(express.static(path.join(__dirname, 'public')));
+app.use('/admin', express.static(path.join(__dirname, 'public')));
 
 // PostgreSQL Connection Pool
 const pool = new Pool({
