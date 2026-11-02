@@ -31,10 +31,10 @@ services:
       - mehfil_network
 
   # ----------------------------------------------------------------------------
-  # 2. MinIO S3-Compatible Object Storage Service
+  # 2. MinIO S3-Compatible Object Storage Service (Drop-in Community Build)
   # ----------------------------------------------------------------------------
   minio:
-    image: minio/minio:latest
+    image: pgsty/silo:latest
     container_name: mehfil_minio
     restart: unless-stopped
     command: server /data --console-address ":9001"
