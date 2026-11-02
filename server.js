@@ -4,10 +4,11 @@
  */
 
 require('dotenv').config();
-const express = require('express');
-const cors = require('cors');
+const fs = require('fs');
 const path = require('path');
 const crypto = require('crypto');
+const express = require('express');
+const cors = require('cors');
 const { Pool } = require('pg');
 const Minio = require('minio');
 const multer = require('multer');
@@ -21,8 +22,9 @@ const PORT = process.env.PORT || 3000;
 app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+
+// Serve frontend static assets from public/ directory
 app.use(express.static(path.join(__dirname, 'public')));
-app.use(express.static(__dirname)); // Also serve root static assets (style.css, etc.)
 
 // PostgreSQL Connection Pool
 const pool = new Pool({
@@ -51,6 +53,22 @@ const upload = multer({
   storage: multer.memoryStorage(),
   limits: { fileSize: 15 * 1024 * 1024 } // 15MB limit
 });
+
+// Email Template Loader
+const EMAIL_TEMPLATE_PATH = path.join(__dirname, 'templates', 'ticket-email.html');
+let cachedEmailTemplate = null;
+
+function getEmailTemplate() {
+  if (!cachedEmailTemplate || process.env.NODE_ENV !== 'production') {
+    try {
+      cachedEmailTemplate = fs.readFileSync(EMAIL_TEMPLATE_PATH, 'utf8');
+    } catch (err) {
+      console.error('[EMAIL TEMPLATE ERROR] Could not read template file:', err.message);
+      cachedEmailTemplate = '<h2>Mehfil-e-Sama Pass Confirmed</h2><p>Ticket: {{TICKET_ID}}</p><img src="cid:{{QR_CID}}" />';
+    }
+  }
+  return cachedEmailTemplate;
+}
 
 // Nodemailer SMTP Transporter
 function getTransporter() {
@@ -93,7 +111,7 @@ async function initDatabase(retries = 15, delayMs = 3000) {
           email VARCHAR(150) NOT NULL,
           phone VARCHAR(50) NOT NULL,
           organization VARCHAR(150),
-          category VARCHAR(50) DEFAULT 'General Mehfil',
+          category VARCHAR(50) DEFAULT 'Mehfil-e-Sama Pass',
           referral_code VARCHAR(30),
           fee_amount VARCHAR(50) NOT NULL,
           sender_account_title VARCHAR(150),
@@ -152,7 +170,7 @@ async function generateTicketQrBuffer(ticketId, attendee) {
     event: "Mehfil-e-Sama 2026",
     ticket_id: ticketId,
     name: `${attendee.first_name} ${attendee.last_name}`,
-    category: attendee.category,
+    category: attendee.category || 'Mehfil-e-Sama Pass',
     cnic: attendee.cnic,
     verified_url: `https://mehfil.sama/verify/${ticketId}`
   });
@@ -168,263 +186,29 @@ async function generateTicketQrBuffer(ticketId, attendee) {
   });
 }
 
-function buildSufiEmailHtml(entry) {
+function renderEmailTemplate(entry) {
+  const template = getEmailTemplate();
   const fullName = `${entry.first_name} ${entry.last_name}`;
-  const category = entry.category || 'General Mehfil';
+  const category = entry.category || 'Mehfil-e-Sama Pass';
   const ticketId = entry.ticket_id;
-  const feeAmount = entry.fee_amount || 'PKR 2,000';
-  
-  return `
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Mehfil-e-Sama Official Pass</title>
-  <style>
-    body {
-      margin: 0;
-      padding: 0;
-      background-color: #060b14;
-      font-family: 'Georgia', 'Cinzel', serif, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-      color: #e2d9c8;
-      -webkit-font-smoothing: antialiased;
-    }
-    .wrapper {
-      width: 100%;
-      table-layout: fixed;
-      background-color: #060b14;
-      padding: 40px 10px;
-    }
-    .main-table {
-      max-width: 620px;
-      margin: 0 auto;
-      background: linear-gradient(180deg, #0d1627 0%, #08111e 100%);
-      border: 2px solid #d4af37;
-      border-radius: 16px;
-      overflow: hidden;
-      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.8), 0 0 30px rgba(212, 175, 55, 0.2);
-    }
-    .header-band {
-      background: linear-gradient(135deg, #04241d 0%, #0a3d31 50%, #061915 100%);
-      border-bottom: 2px solid #d4af37;
-      text-align: center;
-      padding: 35px 20px 25px 20px;
-    }
-    .calligraphy {
-      font-size: 32px;
-      color: #f6e6b4;
-      letter-spacing: 2px;
-      margin: 0 0 6px 0;
-      text-shadow: 0 2px 8px rgba(212, 175, 55, 0.5);
-    }
-    .subtitle {
-      font-size: 13px;
-      letter-spacing: 4px;
-      text-transform: uppercase;
-      color: #d4af37;
-      margin: 0;
-    }
-    .poetic-verse {
-      margin: 15px auto 0 auto;
-      font-style: italic;
-      font-size: 13px;
-      color: #c9b07a;
-      max-width: 480px;
-      line-height: 1.5;
-    }
-    .content-body {
-      padding: 30px 35px;
-      text-align: center;
-    }
-    .salutation {
-      font-size: 20px;
-      color: #ffffff;
-      margin-bottom: 12px;
-    }
-    .confirmation-msg {
-      font-size: 14px;
-      line-height: 1.7;
-      color: #b5bdca;
-      margin-bottom: 25px;
-    }
-    .ticket-card {
-      background: radial-gradient(circle at top, #152238 0%, #0b1424 100%);
-      border: 1px dashed #d4af37;
-      border-radius: 12px;
-      padding: 24px;
-      margin: 25px 0;
-      text-align: center;
-    }
-    .ticket-badge {
-      display: inline-block;
-      background: linear-gradient(90deg, #d4af37, #f5d77f);
-      color: #060b14;
-      font-weight: bold;
-      font-size: 11px;
-      letter-spacing: 2px;
-      text-transform: uppercase;
-      padding: 5px 14px;
-      border-radius: 20px;
-      margin-bottom: 15px;
-    }
-    .ticket-id {
-      font-family: 'Courier New', monospace;
-      font-size: 24px;
-      font-weight: 700;
-      letter-spacing: 3px;
-      color: #f6e6b4;
-      margin: 5px 0 15px 0;
-    }
-    .qr-container {
-      background-color: #ffffff;
-      padding: 14px;
-      border-radius: 10px;
-      display: inline-block;
-      margin: 15px 0;
-      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.4);
-    }
-    .qr-container img {
-      display: block;
-      width: 220px;
-      height: 220px;
-    }
-    .event-details-table {
-      width: 100%;
-      margin-top: 15px;
-      border-collapse: collapse;
-      text-align: left;
-    }
-    .event-details-table td {
-      padding: 8px 12px;
-      font-size: 13px;
-      border-bottom: 1px solid rgba(212, 175, 55, 0.15);
-      color: #d1d5db;
-    }
-    .event-details-table td.label {
-      color: #d4af37;
-      font-weight: 600;
-      width: 35%;
-    }
-    .guidelines {
-      background: rgba(4, 36, 29, 0.35);
-      border-left: 3px solid #10b981;
-      padding: 15px;
-      text-align: left;
-      border-radius: 0 8px 8px 0;
-      margin-top: 25px;
-    }
-    .guidelines h4 {
-      margin: 0 0 8px 0;
-      color: #6ee7b7;
-      font-size: 13px;
-      text-transform: uppercase;
-      letter-spacing: 1px;
-    }
-    .guidelines ul {
-      margin: 0;
-      padding-left: 18px;
-      font-size: 12px;
-      color: #9ca3af;
-      line-height: 1.6;
-    }
-    .footer {
-      background-color: #040810;
-      border-top: 1px solid #1f2e46;
-      text-align: center;
-      padding: 20px;
-      font-size: 11px;
-      color: #6b7280;
-      line-height: 1.6;
-    }
-    .footer a {
-      color: #d4af37;
-      text-decoration: none;
-    }
-  </style>
-</head>
-<body>
-  <div class="wrapper">
-    <table class="main-table" width="100%" cellpadding="0" cellspacing="0">
-      <tr>
-        <td class="header-band">
-          <div class="calligraphy">محفلِ سماع</div>
-          <div class="subtitle">A Night of Mystical Qawwali</div>
-          <div class="poetic-verse">"چھاپ تلک سب چھینی رے موسے نیناں ملائی کے"<br>— حضرت امیر خسرو</div>
-        </td>
-      </tr>
-      <tr>
-        <td class="content-body">
-          <div class="salutation">خوش آمدید، <strong>${fullName}</strong></div>
-          <div class="confirmation-msg">
-            Your pass for <strong>Mehfil-e-Sama 2026</strong> has been confirmed. We look forward to welcoming you to an unforgettable night of divine poetry, ecstatic harmonies, and spiritual devotion.
-          </div>
+  const feeAmount = entry.fee_amount || 'PKR 4,000';
 
-          <div class="ticket-card">
-            <span class="ticket-badge">${category}</span>
-            <div style="font-size: 12px; text-transform: uppercase; letter-spacing: 2px; color: #9ca3af;">Official Pass Code</div>
-            <div class="ticket-id">${ticketId}</div>
-
-            <div class="qr-container">
-              <img src="cid:ticket_qr_code" alt="Gate Pass QR Code" />
-            </div>
-            
-            <div style="font-size: 12px; color: #a1a1aa; margin-top: 5px;">
-              Present this QR code on your mobile device at the entrance.
-            </div>
-
-            <table class="event-details-table">
-              <tr>
-                <td class="label">Date:</td>
-                <td>Saturday, November 28, 2026</td>
-              </tr>
-              <tr>
-                <td class="label">Time:</td>
-                <td>Doors open 7:30 PM | Mehfil starts 8:30 PM</td>
-              </tr>
-              <tr>
-                <td class="label">Venue:</td>
-                <td>The Royal Heritage Courtyard, Alhamra Cultural Complex</td>
-              </tr>
-              <tr>
-                <td class="label">Attendee:</td>
-                <td>${fullName} (CNIC: ${entry.cnic})</td>
-              </tr>
-              <tr>
-                <td class="label">Tier / Pass:</td>
-                <td>${category} (${feeAmount})</td>
-              </tr>
-            </table>
-          </div>
-
-          <div class="guidelines">
-            <h4>Mehfil Protocols & Etiquette:</h4>
-            <ul>
-              <li><strong>Entry:</strong> Each QR code is uniquely encrypted and allows single entry. Once scanned at the gate, it cannot be reused.</li>
-              <li><strong>Attire:</strong> Traditional eastern / modest attire is warmly appreciated for the ambiance of the Mehfil.</li>
-              <li><strong>Timings:</strong> Gates will be closed during the recitation of traditional Kalams to honor the sanctity of the Sama.</li>
-            </ul>
-          </div>
-        </td>
-      </tr>
-      <tr>
-        <td class="footer">
-          Mehfil-e-Sama Secretariat • Spiritual Heritage Foundation<br>
-          For queries or assistance, contact <a href="mailto:sama@mehfil.org">sama@mehfil.org</a><br>
-          <em>May the resonance of divine music bring peace to your soul.</em>
-        </td>
-      </tr>
-    </table>
-  </div>
-</body>
-</html>
-  `;
+  return template
+    .replace(/{{FULL_NAME}}/g, fullName)
+    .replace(/{{TICKET_ID}}/g, ticketId)
+    .replace(/{{CNIC}}/g, entry.cnic)
+    .replace(/{{FEE_AMOUNT}}/g, feeAmount)
+    .replace(/{{PASS_CATEGORY}}/g, category)
+    .replace(/{{QR_CID}}/g, 'ticket_qr_code')
+    .replace(/{{EVENT_DATE}}/g, 'Saturday, November 28, 2026')
+    .replace(/{{EVENT_TIME}}/g, 'Doors open 7:30 PM | Mehfil starts 8:30 PM')
+    .replace(/{{EVENT_VENUE}}/g, 'The Royal Heritage Courtyard, Alhamra Cultural Complex');
 }
 
 async function sendSufiTicketEmail(entry) {
   try {
     const qrBuffer = await generateTicketQrBuffer(entry.ticket_id, entry);
-    const htmlContent = buildSufiEmailHtml(entry);
+    const htmlContent = renderEmailTemplate(entry);
 
     if (!isSmtpConfigured()) {
       console.log(`[EMAIL SIMULATION] SMTP credentials not customized. Pass email for ${entry.email} (Ticket: ${entry.ticket_id}) simulated successfully.`);
@@ -459,14 +243,14 @@ async function sendSufiTicketEmail(entry) {
 // Public Routes
 // -----------------------------------------------------------------------------
 
-// Serve index page
+// Serve public index page
 app.get('/', (req, res) => {
-  res.sendFile(path.join(__dirname, 'index.html'));
+  res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
 
 // Serve admin page - standalone at /admin
 app.get('/admin', (req, res) => {
-  res.sendFile(path.join(__dirname, 'admin.html'));
+  res.sendFile(path.join(__dirname, 'public', 'admin.html'));
 });
 
 // Health check
@@ -497,7 +281,7 @@ app.get(['/api/receipts/:filename', '/uploads/:filename'], async (req, res) => {
   }
 });
 
-// Validate discount / referral codes
+// Validate discount / referral codes (single 4000 PKR ticket)
 app.post('/api/validate_code', (req, res) => {
   const code = (req.body.code || '').trim().toUpperCase();
   const validDiscountCodes = ['SUFI20', 'AQ_501', 'MA_683', 'KN_566', 'NF_494', 'MEHFIL20'];
@@ -510,12 +294,12 @@ app.post('/api/validate_code', (req, res) => {
     return res.json({ valid: true, isGuest: true, discount: 100, message: 'VIP Honor Guest Access Applied (100% Waiver)' });
   }
   if (validDiscountCodes.includes(code)) {
-    return res.json({ valid: true, discount: 20, message: 'Special Mehfil 20% Privilege Discount Applied' });
+    return res.json({ valid: true, discount: 20, message: 'Special Mehfil 20% Privilege Discount Applied (PKR 3,200)' });
   }
   return res.json({ valid: false, discount: 0, message: 'Invalid or expired invitation code' });
 });
 
-// Attendee Registration Endpoint
+// Attendee Registration Endpoint (Single 4,000 PKR Pass)
 app.post('/api/register', upload.single('screenshot'), async (req, res) => {
   try {
     const {
@@ -525,9 +309,9 @@ app.post('/api/register', upload.single('screenshot'), async (req, res) => {
       email,
       phone,
       organization,
-      category = 'General Mehfil',
+      category = 'Mehfil-e-Sama Pass',
       referral_code,
-      fee_amount,
+      fee_amount = 'PKR 4,000',
       sender_account_title,
       sender_bank,
       transaction_id
@@ -604,9 +388,9 @@ app.post('/api/register', upload.single('screenshot'), async (req, res) => {
       email.trim().toLowerCase(),
       phone.trim(),
       (organization || '').trim(),
-      category,
+      'Mehfil-e-Sama Pass',
       (referral_code || '').trim().toUpperCase(),
-      fee_amount || 'PKR 2,000',
+      fee_amount || 'PKR 4,000',
       (sender_account_title || '').trim(),
       (sender_bank || '').trim(),
       (transaction_id || '').trim(),
@@ -715,7 +499,6 @@ app.post('/api/admin/login', (req, res) => {
   const configuredUser = process.env.ADMIN_USERNAME || 'admin';
   const configuredPass = process.env.ADMIN_PASSWORD || 'SufiNight2026!';
 
-  // Standard configured credentials
   if (username === configuredUser && password === configuredPass) {
     return res.json({
       success: true,
@@ -723,7 +506,6 @@ app.post('/api/admin/login', (req, res) => {
     });
   }
 
-  // Backup admin accounts
   const legacyAdmins = {
     '68362': { name: 'Muhammad Ahmad', password: 'Ah@362' },
     '49495': { name: 'Noor Fatima', password: 'Nf@495' },
@@ -937,7 +719,7 @@ app.get('/api/admin/export_csv', async (req, res) => {
     
     const headers = [
       'Ticket ID', 'Timestamp', 'First Name', 'Last Name', 'CNIC',
-      'Email', 'Phone', 'Category', 'Organization', 'Fee Amount',
+      'Email', 'Phone', 'Pass Type', 'Organization', 'Fee Amount',
       'Referral Code', 'Sender Account', 'Sender Bank', 'Transaction ID',
       'Status', 'Gate Checked In', 'Checked In Time', 'Handled By'
     ];
@@ -1005,4 +787,4 @@ if (require.main === module) {
   });
 }
 
-module.exports = { app, pool, minioClient };
+module.exports = { app, pool, minioClient, renderEmailTemplate };

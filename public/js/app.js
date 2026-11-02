@@ -1,15 +1,14 @@
 /**
- * Mehfil-e-Sama Qawwali Ticketing System - Frontend Controller
- * Public Page: Registration, Tier Selection, Pass Status, & Oriental Soundscape
+ * Mehfil-e-Sama Qawwali Ticketing System - Public Application Controller
+ * Handles Pass Reservation (Single 4,000 PKR Ticket), Verification, & Oriental Soundscape
  */
 
-// Application State
 const STATE = {
   currentTab: 'register',
-  selectedTier: 'General Mehfil',
-  basePrice: 2000,
+  selectedTier: 'Mehfil-e-Sama Pass',
+  basePrice: 4000,
   discountPercent: 0,
-  finalPrice: 2000,
+  finalPrice: 4000,
   isGuest: false,
   selectedFile: null,
   recentTicketId: null,
@@ -28,10 +27,10 @@ document.addEventListener('DOMContentLoaded', () => {
     cnicInput.addEventListener('input', (e) => formatCnicInput(e.target));
   }
 
-  // Drag and drop setup for receipt screenshot
+  // Setup drag & drop upload zone
   setupDropzone();
 
-  // Recalculate price
+  // Initialize price display
   recalculatePrice();
 });
 
@@ -56,24 +55,8 @@ function switchTab(tabName) {
 }
 
 // -----------------------------------------------------------------------------
-// Seating Tier Selection & Price Calculation
+// Price Calculation (Single 4,000 PKR Ticket)
 // -----------------------------------------------------------------------------
-function selectTier(tierName, price, cardElement) {
-  STATE.selectedTier = tierName;
-  STATE.basePrice = price;
-
-  // Toggle selected card styling
-  document.querySelectorAll('.tier-card').forEach(c => c.classList.remove('selected'));
-  if (cardElement) {
-    cardElement.classList.add('selected');
-  }
-
-  document.getElementById('selected-category').value = tierName;
-  document.getElementById('selected-base-price').value = price;
-
-  recalculatePrice();
-}
-
 function recalculatePrice() {
   let payable = STATE.basePrice;
 
@@ -88,6 +71,9 @@ function recalculatePrice() {
 
   const dueEl = document.getElementById('display-due-amount');
   if (dueEl) dueEl.textContent = formatted;
+
+  const ticketCardPrice = document.getElementById('ticket-card-price');
+  if (ticketCardPrice) ticketCardPrice.textContent = formatted;
 
   const hiddenFinal = document.getElementById('selected-final-price');
   if (hiddenFinal) hiddenFinal.value = formatted;
@@ -258,7 +244,7 @@ async function handleRegistrationSubmit(e) {
     formData.append('email', document.getElementById('reg-email').value.trim());
     formData.append('phone', document.getElementById('reg-phone').value.trim());
     formData.append('organization', document.getElementById('reg-org').value.trim());
-    formData.append('category', document.getElementById('selected-category').value);
+    formData.append('category', 'Mehfil-e-Sama Pass');
     formData.append('referral_code', document.getElementById('reg-referral').value.trim());
     formData.append('fee_amount', document.getElementById('selected-final-price').value);
     formData.append('transaction_id', document.getElementById('pay-trans-id').value.trim());
@@ -434,7 +420,7 @@ function renderPassCard(entry, container) {
           <div class="val">${entry.cnic}</div>
         </div>
         <div class="pass-meta-item">
-          <div class="label">Seating Tier</div>
+          <div class="label">Pass Type</div>
           <div class="val">${entry.category}</div>
         </div>
         <div class="pass-meta-item">
@@ -492,13 +478,12 @@ function startAmbientDrone() {
     masterGain.connect(ctx.destination);
     STATE.musicNodes.push(masterGain);
 
-    // Fundamental Tanpura Frequencies in Indian Classical Music (C# / Kharaj Pancham tuning)
-    // Sa (C#3: 138.6 Hz), Pa (G#3: 207.65 Hz), Tar Sa (C#4: 277.2 Hz)
+    // Fundamental Tanpura Frequencies (C# / Kharaj Pancham tuning)
     const frequencies = [
       { f: 138.6, type: 'sawtooth', gain: 0.08, lfoRate: 0.25 },
       { f: 207.65, type: 'triangle', gain: 0.12, lfoRate: 0.35 },
       { f: 277.2, type: 'sine', gain: 0.06, lfoRate: 0.18 },
-      { f: 69.3, type: 'sine', gain: 0.14, lfoRate: 0.1 } // Deep sub drone
+      { f: 69.3, type: 'sine', gain: 0.14, lfoRate: 0.1 }
     ];
 
     frequencies.forEach(spec => {
@@ -506,7 +491,6 @@ function startAmbientDrone() {
       osc.type = spec.type;
       osc.frequency.setValueAtTime(spec.f, ctx.currentTime);
 
-      // Lowpass filter for warm acoustic resonance
       const filter = ctx.createBiquadFilter();
       filter.type = 'lowpass';
       filter.frequency.setValueAtTime(450, ctx.currentTime);
@@ -515,7 +499,6 @@ function startAmbientDrone() {
       const gain = ctx.createGain();
       gain.gain.setValueAtTime(spec.gain, ctx.currentTime);
 
-      // Amplitude LFO to simulate the breathing rhythm of the Tanpura plucking
       const lfo = ctx.createOscillator();
       lfo.frequency.setValueAtTime(spec.lfoRate, ctx.currentTime);
       const lfoGain = ctx.createGain();
@@ -544,8 +527,6 @@ function stopAmbientDrone() {
         if (node.disconnect) node.disconnect();
       });
       STATE.musicNodes = [];
-    } catch (e) {
-      // Ignore cleanup error
-    }
+    } catch (e) {}
   }
 }

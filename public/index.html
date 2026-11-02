@@ -14,7 +14,7 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
   <!-- Stylesheet -->
-  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="/css/style.css">
 </head>
 <body>
 
@@ -78,7 +78,7 @@
       </div>
       <div class="hero-badge">
         <i class="fa-solid fa-guitar"></i>
-        <span>Sufi Baithak & Courtyard Seating</span>
+        <span>Traditional Sufi Baithak & Courtyard</span>
       </div>
     </div>
   </section>
@@ -92,54 +92,31 @@
            ===================================================================== -->
       <section class="view-section active" id="view-register">
         <div style="text-align: center; margin-bottom: 25px;">
-          <h2 class="font-serif" style="font-size: 22px; color: var(--gold-light); margin-bottom: 6px;">Select Your Mehfil Seating</h2>
-          <p style="font-size: 13px; color: var(--text-muted);">Choose your preferred seating arrangement for an immersive spiritual journey.</p>
+          <h2 class="font-serif" style="font-size: 22px; color: var(--gold-light); margin-bottom: 6px;">Reserve Your Mehfil Pass</h2>
+          <p style="font-size: 13px; color: var(--text-muted);">An evening of divine poetry, ecstatic harmonies, and traditional hospitality.</p>
         </div>
 
-        <!-- Seating Tier Selector -->
-        <div class="tier-grid">
-          <!-- Tier 1 -->
-          <div class="tier-card selected" id="tier-general" onclick="selectTier('General Mehfil', 2000, this)">
-            <span class="tier-badge">Standard</span>
-            <div class="tier-name">General Mehfil Pass</div>
-            <div class="tier-price">PKR 2,000</div>
-            <ul class="tier-features">
-              <li><i class="fa-solid fa-check"></i> Carpeted Courtyard Seating</li>
-              <li><i class="fa-solid fa-check"></i> Full Access to Qawwali Performances</li>
-              <li><i class="fa-solid fa-check"></i> E-Ticket with Encrypted Gate QR Code</li>
-            </ul>
-          </div>
-
-          <!-- Tier 2 -->
-          <div class="tier-card" id="tier-vip" onclick="selectTier('Sufi Baithak (VIP)', 4000, this)">
-            <span class="tier-badge" style="background: var(--gold-gradient); color: #060b14;">Royal VIP</span>
-            <div class="tier-name">Sufi Baithak Pass</div>
-            <div class="tier-price">PKR 4,000</div>
-            <ul class="tier-features">
-              <li><i class="fa-solid fa-check"></i> Front-Row Royal Takht & Ghao-Takiya Seating</li>
-              <li><i class="fa-solid fa-check"></i> Complimentary Kashmiri Chai & Traditional Sweets</li>
-              <li><i class="fa-solid fa-check"></i> Priority Fast-Track Gate Admission</li>
-            </ul>
-          </div>
-
-          <!-- Tier 3 -->
-          <div class="tier-card" id="tier-student" onclick="selectTier('Student Concession', 1500, this)">
-            <span class="tier-badge">Special</span>
-            <div class="tier-name">Student Concession</div>
-            <div class="tier-price">PKR 1,500</div>
-            <ul class="tier-features">
-              <li><i class="fa-solid fa-check"></i> Full Courtyard Seating Admission</li>
-              <li><i class="fa-solid fa-check"></i> For High School & University Students</li>
-              <li><i class="fa-solid fa-check"></i> Valid Student ID Required at Entry</li>
+        <!-- Single Official Ticket Card (PKR 4,000) -->
+        <div style="max-width: 640px; margin: 0 auto 30px auto;">
+          <div class="tier-card selected" style="text-align: center; padding: 28px 24px;">
+            <span class="tier-badge" style="background: var(--gold-gradient); color: #060b14; font-weight: 800;">Official Pass</span>
+            <div class="tier-name" style="font-size: 22px; margin-top: 6px;">Mehfil-e-Sama Admission Pass</div>
+            <div class="tier-price" id="ticket-card-price" style="font-size: 32px; margin: 8px 0 16px 0;">PKR 4,000</div>
+            
+            <ul class="tier-features" style="display: inline-block; text-align: left; margin: 0 auto;">
+              <li><i class="fa-solid fa-check"></i> Full Access to Grand Qawwali Performances & Ecstatic Sama</li>
+              <li><i class="fa-solid fa-check"></i> Traditional Carpeted Courtyard & Royal Baithak Seating</li>
+              <li><i class="fa-solid fa-check"></i> Complimentary Traditional Kashmiri Chai & Sweets</li>
+              <li><i class="fa-solid fa-check"></i> Personalized E-Ticket with Encrypted Gate QR Code</li>
             </ul>
           </div>
         </div>
 
         <form id="registration-form" onsubmit="handleRegistrationSubmit(event)">
           <!-- Hidden calculated fields -->
-          <input type="hidden" id="selected-category" name="category" value="General Mehfil">
-          <input type="hidden" id="selected-base-price" value="2000">
-          <input type="hidden" id="selected-final-price" name="fee_amount" value="PKR 2,000">
+          <input type="hidden" id="selected-category" name="category" value="Mehfil-e-Sama Pass">
+          <input type="hidden" id="selected-base-price" value="4000">
+          <input type="hidden" id="selected-final-price" name="fee_amount" value="PKR 4,000">
 
           <!-- Form Fields Grid -->
           <div class="form-grid">
@@ -184,7 +161,7 @@
               <label class="form-label" for="reg-org">
                 <i class="fa-regular fa-building text-gold"></i> Affiliation / University (Optional)
               </label>
-              <input type="text" id="reg-org" class="form-input" placeholder="e.g. LUMS / NCA / Arts Council">
+              <input type="text" id="reg-org" class="form-input" placeholder="e.g. LUMS / NCA / Heritage Trust">
             </div>
 
             <!-- Privilege / Referral Code -->
@@ -206,7 +183,7 @@
           <div class="payment-box">
             <div class="payment-box-title">
               <i class="fa-solid fa-receipt text-gold"></i>
-              <span>Official Payment Channels • Due Amount: <strong id="display-due-amount" style="color: var(--gold-light);">PKR 2,000</strong></span>
+              <span>Official Payment Channels • Due Amount: <strong id="display-due-amount" style="color: var(--gold-light);">PKR 4,000</strong></span>
             </div>
             
             <p style="font-size: 13px; color: var(--text-secondary); margin-bottom: 15px;">
@@ -334,6 +311,6 @@
   </footer>
 
   <!-- Frontend Controller Script -->
-  <script src="script.js"></script>
+  <script src="/js/app.js"></script>
 </body>
 </html>
