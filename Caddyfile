@@ -1,0 +1,17 @@
+{
+    # Global options
+    email {$ACME_EMAIL:admin@example.com}
+}
+
+# The public domain configured via .env (falls back to :80 for local dev if not set)
+{$DOMAIN_NAME::80} {
+    encode gzip zstd
+
+    # Forward all traffic to the Node.js Express application container
+    reverse_proxy app:3000 {
+        header_up Host {host}
+        header_up X-Real-IP {remote_host}
+        header_up X-Forwarded-For {remote_host}
+        header_up X-Forwarded-Proto {scheme}
+    }
+}

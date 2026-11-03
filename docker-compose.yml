@@ -81,7 +81,6 @@ services:
       ADMIN_USERNAME: ${ADMIN_USERNAME:-admin}
       ADMIN_PASSWORD: ${ADMIN_PASSWORD:-SufiNight2026!}
     ports:
-      - "80:3000"
       - "${PORT:-3000}:3000"
     depends_on:
       postgres:
@@ -91,6 +90,29 @@ services:
     networks:
       - mehfil_network
 
+  # ----------------------------------------------------------------------------
+  # 4. Caddy Reverse Proxy & Automatic SSL (Let's Encrypt / ZeroSSL)
+  # ----------------------------------------------------------------------------
+  caddy:
+    image: caddy:2-alpine
+    container_name: mehfil_caddy
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+      - "443:443/udp"
+    environment:
+      DOMAIN_NAME: ${DOMAIN_NAME:-:80}
+      ACME_EMAIL: ${ACME_EMAIL:-admin@example.com}
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
+    networks:
+      - mehfil_network
+    depends_on:
+      - app
+
 # ==============================================================================
 # PERSISTENT VOLUMES & ISOLATED NETWORK
 # ==============================================================================
@@ -99,6 +121,10 @@ volumes:
     name: mehfil_pgdata
   miniodata:
     name: mehfil_miniodata
+  caddy_data:
+    name: mehfil_caddy_data
+  caddy_config:
+    name: mehfil_caddy_config
 
 networks:
   mehfil_network:
