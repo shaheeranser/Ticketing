@@ -454,7 +454,8 @@ app.post('/api/register', upload.single('screenshot'), async (req, res) => {
     const isGuestCode = codesFree.includes(upperRef);
     const isDiscountCode = codes25.includes(upperRef);
 
-    const initialStatus = isGuestCode ? 'Approved' : 'Pending';
+    // Guest entries also require committee approval before pass issuance
+    const initialStatus = 'Pending';
     let computedFee = fee_amount || 'PKR 4,000';
     if (isGuestCode) {
       computedFee = 'PKR 0 (Free Entry)';
@@ -493,17 +494,12 @@ app.post('/api/register', upload.single('screenshot'), async (req, res) => {
     const result = await pool.query(insertQuery, values);
     const savedEntry = result.rows[0];
 
-    // If VIP guest is auto-approved, trigger the confirmation email right away
-    if (initialStatus === 'Approved') {
-      sendSufiTicketEmail(savedEntry).catch(e => console.error('[EMAIL AUTO ERROR]', e.message));
-    }
-
     res.json({
       success: true,
       ticket_id: ticketId,
       status: initialStatus,
-      message: initialStatus === 'Approved'
-        ? 'VIP Invitation confirmed! Your pass has been issued and sent to your email.'
+      message: isGuestCode
+        ? 'VIP Guest reservation received! Our committee will review and issue your QR pass shortly.'
         : 'Registration submitted successfully! Our committee will verify your payment and issue your QR pass shortly.',
       entry: savedEntry
     });
@@ -741,6 +737,60 @@ app.post('/api/admin/resend_ticket', async (req, res) => {
     });
   } catch (err) {
     console.error('[RESEND TICKET ERROR]', err);
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+// Hard Delete Registration from Database
+app.delete('/api/admin/entry/:ticketId', async (req, res) => {
+  try {
+    const { ticketId } = req.params;
+    if (!ticketId) {
+      return res.status(400).json({ success: false, error: 'Ticket ID is required.' });
+    }
+
+    const deleteQuery = 'DELETE FROM registrations WHERE UPPER(ticket_id) = UPPER($1) RETURNING *;';
+    const result = await pool.query(deleteQuery, [ticketId.trim()]);
+
+    if (result.rows.length === 0) {
+      return res.status(404).json({ success: false, error: `Registration ${ticketId} not found.` });
+    }
+
+    console.log(`[ADMIN DELETE] Registration ${ticketId} hard-deleted permanently from database.`);
+    res.json({
+      success: true,
+      message: `Registration ${ticketId} has been permanently deleted from the database.`,
+      deleted: result.rows[0]
+    });
+  } catch (err) {
+    console.error('[ADMIN DELETE ERROR]', err);
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+// Alternative POST endpoint for environments where HTTP DELETE may be restricted
+app.post('/api/admin/delete_entry', async (req, res) => {
+  try {
+    const { ticket_id } = req.body;
+    if (!ticket_id) {
+      return res.status(400).json({ success: false, error: 'ticket_id is required.' });
+    }
+
+    const deleteQuery = 'DELETE FROM registrations WHERE UPPER(ticket_id) = UPPER($1) RETURNING *;';
+    const result = await pool.query(deleteQuery, [ticket_id.trim()]);
+
+    if (result.rows.length === 0) {
+      return res.status(404).json({ success: false, error: `Registration ${ticket_id} not found.` });
+    }
+
+    console.log(`[ADMIN DELETE] Registration ${ticket_id} hard-deleted permanently from database.`);
+    res.json({
+      success: true,
+      message: `Registration ${ticket_id} has been permanently deleted from the database.`,
+      deleted: result.rows[0]
+    });
+  } catch (err) {
+    console.error('[ADMIN DELETE ERROR]', err);
     res.status(500).json({ success: false, error: err.message });
   }
 });

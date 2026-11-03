@@ -1010,6 +1010,43 @@ body {
   text-decoration: none;
 }
 
+.footer-instagram-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--gold-light);
+  font-size: 13px;
+  font-weight: 600;
+  text-decoration: none;
+  padding: 8px 18px;
+  border: 1px solid var(--border-gold);
+  border-radius: 30px;
+  background: rgba(18, 30, 49, 0.7);
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.4);
+  transition: all 0.25s ease;
+}
+.footer-instagram-link i {
+  font-size: 16px;
+  color: #f43f5e;
+  transition: transform 0.25s ease;
+}
+.footer-instagram-link:hover {
+  background: var(--gold-gradient);
+  color: var(--bg-primary);
+  border-color: var(--gold-primary);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(212, 175, 55, 0.35);
+}
+.footer-instagram-link:hover i {
+  color: var(--bg-primary);
+  transform: scale(1.15);
+}
+
+.nav-instagram-link:hover {
+  border-color: #f43f5e !important;
+  color: #fda4af !important;
+}
+
 /* -----------------------------------------------------------------------------
  * Mobile Responsive Breakpoints
  * ----------------------------------------------------------------------------- */

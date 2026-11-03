@@ -176,26 +176,34 @@ function renderTableRows(entries) {
 
     // Action buttons
     let actionButtons = '';
+    const deleteBtn = `
+      <button class="btn-action btn-action-delete" onclick="deleteEntry('${r.ticket_id}')" title="Permanently Delete Registration from Database">
+        <i class="fa-solid fa-trash-can"></i> Delete
+      </button>
+    `;
+
     if (r.status === 'Pending') {
       actionButtons = `
         <div class="action-btn-group">
           <button class="btn-action btn-action-approve" onclick="updateStatus('${r.ticket_id}', 'Approved')" title="Approve & Send Stylized QR Pass Email">
-            <i class="fa-solid fa-paper-plane"></i> Approve & Email
+            <i class="fa-solid fa-paper-plane"></i> Approve
           </button>
           <button class="btn-action btn-action-decline" onclick="updateStatus('${r.ticket_id}', 'Declined')" title="Decline Registration">
             <i class="fa-solid fa-xmark"></i> Decline
           </button>
+          ${deleteBtn}
         </div>
       `;
     } else if (r.status === 'Approved') {
       actionButtons = `
         <div class="action-btn-group">
           <button class="btn-action btn-action-resend" onclick="resendTicketEmail('${r.ticket_id}')" title="Re-dispatch stylized pass email">
-            <i class="fa-solid fa-rotate-right"></i> Resend Pass
+            <i class="fa-solid fa-rotate-right"></i> Resend
           </button>
           <button class="btn-action btn-action-decline" onclick="updateStatus('${r.ticket_id}', 'Declined')" title="Revoke Pass">
             <i class="fa-solid fa-ban"></i> Revoke
           </button>
+          ${deleteBtn}
         </div>
       `;
     } else {
@@ -204,6 +212,7 @@ function renderTableRows(entries) {
           <button class="btn-action btn-action-approve" onclick="updateStatus('${r.ticket_id}', 'Approved')" title="Re-Approve and dispatch pass">
             <i class="fa-solid fa-check"></i> Re-Approve
           </button>
+          ${deleteBtn}
         </div>
       `;
     }
@@ -309,6 +318,32 @@ async function resendTicketEmail(ticketId) {
     alert(data.message || 'Pass email re-sent successfully.');
   } catch (err) {
     alert(`Error: ${err.message}`);
+  }
+}
+
+// -----------------------------------------------------------------------------
+// Hard Delete Registration
+// -----------------------------------------------------------------------------
+async function deleteEntry(ticketId) {
+  const confirmed = confirm(
+    `PERMANENT DELETION WARNING:\n\nAre you sure you want to permanently delete registration "${ticketId}" from the database?\n\nThis will perform a hard delete and cannot be undone.`
+  );
+  if (!confirmed) return;
+
+  try {
+    const res = await fetch(`/api/admin/entry/${encodeURIComponent(ticketId)}`, {
+      method: 'DELETE'
+    });
+    const data = await res.json();
+
+    if (!res.ok || !data.success) {
+      throw new Error(data.error || 'Failed to delete record.');
+    }
+
+    alert(data.message || `Registration ${ticketId} deleted successfully.`);
+    loadEntries(false);
+  } catch (err) {
+    alert(`Delete Error: ${err.message}`);
   }
 }
 

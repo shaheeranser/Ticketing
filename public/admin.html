@@ -203,6 +203,17 @@
     }
     .btn-action-resend:hover { background: var(--gold-primary); color: #060b14; }
 
+    .btn-action-delete {
+      background: rgba(239, 68, 68, 0.12);
+      border: 1px solid rgba(239, 68, 68, 0.35);
+      color: #fca5a5;
+    }
+    .btn-action-delete:hover {
+      background: #b91c1c;
+      color: #ffffff;
+      border-color: #b91c1c;
+    }
+
     /* Login View */
     .login-container {
       max-width: 440px;
@@ -263,7 +274,10 @@
         </div>
       </div>
 
-      <div style="display: flex; gap: 10px; align-items: center;">
+      <div style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">
+        <a href="https://www.instagram.com/baithakand.beyond/" target="_blank" rel="noopener noreferrer" class="btn-secondary" style="text-decoration: none;" title="Open Instagram @baithakand.beyond">
+          <i class="fa-brands fa-instagram" style="color: #f43f5e;"></i> Instagram
+        </a>
         <button type="button" class="btn-secondary" onclick="openGateScannerModal()">
           <i class="fa-solid fa-camera"></i> Gate QR Scanner
         </button>
