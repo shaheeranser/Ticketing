@@ -101,13 +101,11 @@ function getAdmins() {
 }
 
 function getEmailTemplate() {
-  if (!cachedEmailTemplate || process.env.NODE_ENV !== 'production') {
-    try {
-      cachedEmailTemplate = fs.readFileSync(EMAIL_TEMPLATE_PATH, 'utf8');
-    } catch (err) {
-      console.error('[EMAIL TEMPLATE ERROR] Could not read template file:', err.message);
-      cachedEmailTemplate = '<h2>Mehfil-e-Sama Pass Confirmed</h2><p>Ticket: {{TICKET_ID}}</p><img src="cid:{{QR_CID}}" />';
-    }
+  try {
+    cachedEmailTemplate = fs.readFileSync(EMAIL_TEMPLATE_PATH, 'utf8');
+  } catch (err) {
+    console.error('[EMAIL TEMPLATE ERROR] Could not read template file:', err.message);
+    cachedEmailTemplate = '<h2>Sur o Suroor Pass Confirmed</h2><p>Ticket: {{TICKET_ID}}</p><img src="cid:{{QR_CID}}" />';
   }
   return cachedEmailTemplate;
 }
@@ -291,7 +289,9 @@ async function sendSufiTicketEmail(entry) {
         {
           filename: `ticket_${entry.ticket_id}.png`,
           content: qrBuffer,
-          cid: 'ticket_qr_code'
+          cid: 'ticket_qr_code',
+          contentType: 'image/png',
+          contentDisposition: 'inline'
         }
       ]
     };
