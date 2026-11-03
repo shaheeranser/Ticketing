@@ -73,6 +73,7 @@ function recalculatePrice() {
   const qrImg = document.getElementById('payment-qr-img');
   const qrSubtext = document.getElementById('payment-qr-subtext');
   const qrArea = document.getElementById('payment-qr-area');
+  const bankArea = document.getElementById('bank-details-area');
 
   if (STATE.isGuest) {
     payable = 0;
@@ -89,6 +90,7 @@ function recalculatePrice() {
     if (hiddenFinal) hiddenFinal.value = formatted;
     if (submitBtnText) submitBtnText.textContent = 'Confirm Free Guest Admission';
     if (qrArea) qrArea.style.display = 'none';
+    if (bankArea) bankArea.style.display = 'none';
   } else if (STATE.discountPercent > 0) {
     payable = Math.round(STATE.basePrice * (1 - STATE.discountPercent / 100));
     STATE.finalPrice = payable;
@@ -104,6 +106,7 @@ function recalculatePrice() {
     if (hiddenFinal) hiddenFinal.value = formatted;
     if (submitBtnText) submitBtnText.textContent = `Reserve Pass • ${formatted}`;
     if (qrArea) qrArea.style.display = 'block';
+    if (bankArea) bankArea.style.display = 'block';
     if (qrImg) qrImg.src = '/images/qr-payment-3000.png';
     if (qrSubtext) qrSubtext.textContent = 'Scan to pay PKR 3,000 via Raast / Banking App';
   } else {
@@ -119,6 +122,7 @@ function recalculatePrice() {
     if (hiddenFinal) hiddenFinal.value = formatted;
     if (submitBtnText) submitBtnText.textContent = `Reserve Pass • ${formatted}`;
     if (qrArea) qrArea.style.display = 'block';
+    if (bankArea) bankArea.style.display = 'block';
     if (qrImg) qrImg.src = '/images/qr-payment-4000.png';
     if (qrSubtext) qrSubtext.textContent = 'Scan to pay PKR 4,000 via Raast / Banking App';
   }

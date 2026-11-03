@@ -226,41 +226,36 @@
               </div>
             </div>
 
-            <!-- Manual Transfer Option (Collapsible for users on same device) -->
-            <div class="manual-bank-details" style="margin-top: 14px; border-top: 1px dashed rgba(212, 175, 55, 0.2); padding-top: 12px;">
-              <details style="cursor: pointer;">
-                <summary style="font-size: 12px; color: var(--text-muted); outline: none; user-select: none;">
-                  <i class="fa-solid fa-building-columns text-gold"></i> Or transfer manually via Bank Account / IBAN
-                </summary>
-                <div class="account-pill" style="margin-top: 10px;">
-                  <div class="channel-header">
-                    <div class="channel-name"><i class="fa-solid fa-building-columns"></i> Al Baraka Bank</div>
-                    <span class="official-tag">Official Channel</span>
-                  </div>
-                  <div class="account-detail-row">
-                    <span class="detail-label">Account Title</span>
-                    <span class="detail-value">Muhammad Ahmed</span>
-                  </div>
-                  <div class="account-detail-row">
-                    <span class="detail-label">Account Number</span>
-                    <div class="account-number-copy">
-                      <span class="mono-num" id="acct-num-val">0104729656019</span>
-                      <button type="button" class="copy-pill-btn" onclick="copyToClipboard('0104729656019', this)" title="Copy Account Number">
-                        <i class="fa-regular fa-copy"></i> <span>Copy</span>
-                      </button>
-                    </div>
-                  </div>
-                  <div class="account-detail-row">
-                    <span class="detail-label">IBAN</span>
-                    <div class="account-number-copy">
-                      <span class="mono-num iban-text" id="iban-val">PK62AIIN0000104729656019</span>
-                      <button type="button" class="copy-pill-btn" onclick="copyToClipboard('PK62AIIN0000104729656019', this)" title="Copy IBAN">
-                        <i class="fa-regular fa-copy"></i> <span>Copy</span>
-                      </button>
-                    </div>
-                  </div>
+            <!-- Official Bank Transfer & Raast Account Details -->
+            <div class="account-pill" id="bank-details-area" style="margin-top: 16px; margin-bottom: 20px;">
+              <div class="channel-header">
+                <div class="channel-name">
+                  <i class="fa-solid fa-building-columns text-gold"></i> Al Baraka Bank (Direct Transfer / Raast)
                 </div>
-              </details>
+                <span class="official-tag">Official Channel</span>
+              </div>
+              <div class="account-detail-row">
+                <span class="detail-label">Account Title</span>
+                <span class="detail-value">Muhammad Ahmed</span>
+              </div>
+              <div class="account-detail-row">
+                <span class="detail-label">Account Number</span>
+                <div class="account-number-copy">
+                  <span class="mono-num" id="acct-num-val">0104729656019</span>
+                  <button type="button" class="copy-pill-btn" onclick="copyToClipboard('0104729656019', this)" title="Copy Account Number">
+                    <i class="fa-regular fa-copy"></i> <span>Copy</span>
+                  </button>
+                </div>
+              </div>
+              <div class="account-detail-row">
+                <span class="detail-label">IBAN</span>
+                <div class="account-number-copy">
+                  <span class="mono-num iban-text" id="iban-val">PK62AIIN0000104729656019</span>
+                  <button type="button" class="copy-pill-btn" onclick="copyToClipboard('PK62AIIN0000104729656019', this)" title="Copy IBAN">
+                    <i class="fa-regular fa-copy"></i> <span>Copy</span>
+                  </button>
+                </div>
+              </div>
             </div>
 
             <!-- Verification Fields -->
