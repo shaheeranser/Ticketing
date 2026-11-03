@@ -265,7 +265,7 @@ function handleSearchInput(e) {
 // -----------------------------------------------------------------------------
 async function updateStatus(ticketId, newStatus) {
   const confirmMsg = newStatus === 'Approved'
-    ? `Approve registration for ${ticketId}?\n\nThis will automatically generate the attendee's QR Pass and dispatch the stylized Mehfil-e-Sama invitation email.`
+    ? `Approve registration for ${ticketId}?\n\nThis will automatically generate the attendee's QR Pass and dispatch the stylized Sur o Suroor invitation email.`
     : `Set status of ${ticketId} to "${newStatus}"?`;
 
   if (!confirm(confirmMsg)) return;

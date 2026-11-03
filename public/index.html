@@ -2,10 +2,12 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>محفلِ سماع • Mehfil-e-Sama 2026 | Mystical Qawwali Night Passes</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0">
+  <title>سُر و سُرور • Sur o Suroor 2026 | Mystical Qawwali Passes</title>
+  <link rel="icon" type="image/png" href="./images/sur-o-suroor-icon.png">
+  <link rel="apple-touch-icon" href="./images/sur-o-suroor-icon.png">
 
-  <!-- Google Fonts: Cinzel (Serif), Amiri (Urdu Calligraphy), Plus Jakarta Sans -->
+  <!-- Google Fonts: Cinzel, Amiri, Plus Jakarta Sans, JetBrains Mono -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Amiri:ital,wght@0,400;0,700;1,400&family=Cinzel:wght@600;700;800;900&family=JetBrains+Mono:wght@500;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
@@ -13,7 +15,7 @@
   <!-- FontAwesome 6 Icons -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
-  <!-- Stylesheet -->
+  <!-- Main Stylesheet -->
   <link rel="stylesheet" href="./css/style.css">
 </head>
 <body>
@@ -22,27 +24,25 @@
   <header class="header-nav">
     <div class="nav-container">
       <div class="brand-wrapper" onclick="switchTab('register')">
-        <div class="brand-icon">
-          <i class="fa-solid fa-moon"></i>
-        </div>
+        <img src="./images/sur-o-suroor-icon.png" alt="Sur o Suroor" class="brand-logo-img">
         <div class="brand-names">
-          <span class="brand-title">Mehfil-e-Sama</span>
-          <span class="brand-urdu">محفلِ سماع • بزمِ خسرو</span>
+          <span class="brand-title">Sur o Suroor</span>
+          <span class="brand-urdu">سُر و سُرور</span>
         </div>
       </div>
 
       <div class="nav-controls">
         <button class="nav-tab-btn active" id="tab-btn-register" onclick="switchTab('register')">
-          <i class="fa-solid fa-ticket-simple"></i> Pass Reservation
+          <i class="fa-solid fa-ticket"></i> <span class="nav-text">Reserve Pass</span>
         </button>
         <button class="nav-tab-btn" id="tab-btn-status" onclick="switchTab('status')">
-          <i class="fa-solid fa-qrcode"></i> Check E-Pass Status
+          <i class="fa-solid fa-qrcode"></i> <span class="nav-text">Check Pass</span>
         </button>
 
-        <!-- Ambient Oriental Music Controller -->
+        <!-- Ambient Soundscape Controller -->
         <button class="music-toggle-btn" id="btn-ambient-music" onclick="toggleAmbientMusic()" title="Toggle Ambient Oriental Sitar & Tanpura Soundscape">
           <i class="fa-solid fa-music"></i>
-          <span id="music-btn-text">Mehfil Ambience</span>
+          <span id="music-btn-text" class="nav-text">Ambience</span>
           <div class="soundwave-bars" id="music-wave-bars">
             <span></span><span></span><span></span>
           </div>
@@ -51,39 +51,41 @@
     </div>
   </header>
 
-  <!-- Hero Header -->
+  <!-- Hero Section -->
   <section class="hero-section">
-    <div class="hero-urdu-title">محفلِ سماع</div>
-    <h1 class="hero-title">A Night of Mystical Qawwali</h1>
+    <div class="hero-logo-wrap">
+      <img src="./images/sur-o-suroor-logo.png" alt="Sur o Suroor Calligraphy" class="hero-brand-calligraphy">
+    </div>
+    <div class="hero-urdu-title">سُر و سُرور</div>
+    <h1 class="hero-title">Sur o Suroor</h1>
+    <div class="hero-subtitle">A Night of Mystical Qawwali & Ecstatic Sama</div>
+    
     <div class="arabesque-divider">
       <span class="ornament">✦ ✧ ✦</span>
     </div>
+
     <p class="hero-verse">
       "چھاپ تلک سب چھینی رے موسے نیناں ملائی کے"<br>
-      <em>"You took away my semblance and my pride, with just one glance into my eyes."</em> — Hazrat Amir Khusrau
+      <em>"You took away my semblance and my pride, with just one glance into my eyes." — Hazrat Amir Khusrau</em>
     </p>
 
     <div class="hero-badges-row">
       <div class="hero-badge">
-        <i class="fa-regular fa-calendar-check"></i>
-        <span>Saturday, November 28, 2026</span>
+        <i class="fa-regular fa-calendar"></i>
+        <span>Date: TBA</span>
       </div>
       <div class="hero-badge">
         <i class="fa-regular fa-clock"></i>
-        <span>Doors: 7:30 PM • Sama: 8:30 PM</span>
+        <span>Time: TBA</span>
       </div>
       <div class="hero-badge">
-        <i class="fa-solid fa-landmark"></i>
-        <span>The Royal Heritage Courtyard, Lahore</span>
-      </div>
-      <div class="hero-badge">
-        <i class="fa-solid fa-guitar"></i>
-        <span>Traditional Sufi Baithak & Courtyard</span>
+        <i class="fa-solid fa-location-dot"></i>
+        <span>Venue: Gulberg, TBA</span>
       </div>
     </div>
   </section>
 
-  <!-- Main Container -->
+  <!-- Main Content Wrapper -->
   <main class="main-wrapper">
     <div class="view-card">
 
@@ -91,34 +93,22 @@
            VIEW 1: PASS RESERVATION FORM
            ===================================================================== -->
       <section class="view-section active" id="view-register">
-        <div style="text-align: center; margin-bottom: 25px;">
-          <h2 class="font-serif" style="font-size: 22px; color: var(--gold-light); margin-bottom: 6px;">Reserve Your Mehfil Pass</h2>
-          <p style="font-size: 13px; color: var(--text-muted);">An evening of divine poetry, ecstatic harmonies, and traditional hospitality.</p>
-        </div>
-
-        <!-- Single Official Ticket Card (PKR 4,000) -->
-        <div style="max-width: 640px; margin: 0 auto 30px auto;">
-          <div class="tier-card selected" style="text-align: center; padding: 28px 24px;">
-            <span class="tier-badge" style="background: var(--gold-gradient); color: #060b14; font-weight: 800;">Official Pass</span>
-            <div class="tier-name" style="font-size: 22px; margin-top: 6px;">Mehfil-e-Sama Admission Pass</div>
-            <div class="tier-price" id="ticket-card-price" style="font-size: 32px; margin: 8px 0 16px 0;">PKR 4,000</div>
-            
-            <ul class="tier-features" style="display: inline-block; text-align: left; margin: 0 auto;">
-              <li><i class="fa-solid fa-check"></i> Full Access to Grand Qawwali Performances & Ecstatic Sama</li>
-              <li><i class="fa-solid fa-check"></i> Traditional Carpeted Courtyard & Royal Baithak Seating</li>
-              <li><i class="fa-solid fa-check"></i> Complimentary Traditional Kashmiri Chai & Sweets</li>
-              <li><i class="fa-solid fa-check"></i> Personalized E-Ticket with Encrypted Gate QR Code</li>
-            </ul>
-          </div>
+        <div class="section-heading">
+          <h2 class="font-serif">Pass Reservation</h2>
+          <p>An evening of divine poetry, ecstatic harmonies, and traditional hospitality.</p>
         </div>
 
         <form id="registration-form" onsubmit="handleRegistrationSubmit(event)">
           <!-- Hidden calculated fields -->
-          <input type="hidden" id="selected-category" name="category" value="Mehfil-e-Sama Pass">
+          <input type="hidden" id="selected-category" name="category" value="Sur o Suroor Pass">
           <input type="hidden" id="selected-base-price" value="4000">
           <input type="hidden" id="selected-final-price" name="fee_amount" value="PKR 4,000">
 
-          <!-- Form Fields Grid -->
+          <!-- 1. Attendee Personal Details (Top of the Form) -->
+          <div class="form-section-title">
+            <i class="fa-regular fa-id-badge text-gold"></i> Attendee Information
+          </div>
+
           <div class="form-grid">
             <div class="form-group">
               <label class="form-label" for="reg-first-name">
@@ -147,7 +137,7 @@
                 <i class="fa-regular fa-envelope text-gold"></i> Email Address *
               </label>
               <input type="email" id="reg-email" class="form-input" required placeholder="you@domain.com">
-              <span class="form-helper">Your stylized E-Ticket QR pass will be delivered here automatically</span>
+              <span class="form-helper">Your stylized E-Ticket QR pass will be delivered here</span>
             </div>
 
             <div class="form-group">
@@ -163,59 +153,113 @@
               </label>
               <input type="text" id="reg-org" class="form-input" placeholder="e.g. LUMS / NCA / Heritage Trust">
             </div>
+          </div>
 
-            <!-- Privilege / Referral Code -->
-            <div class="form-group full-width">
+          <!-- 2. Official Pass Fee & Privilege Code (Placed Below Attendee Details) -->
+          <div class="form-section-title">
+            <i class="fa-solid fa-ticket text-gold"></i> Official Pass & Privilege Code
+          </div>
+
+          <div class="pass-summary-card">
+            <div class="pass-summary-header">
+              <div class="pass-info-meta">
+                <span class="tier-badge">Official Admission</span>
+                <h3 class="pass-summary-title">Sur o Suroor Admission Pass</h3>
+                <div class="pass-features-chips">
+                  <span><i class="fa-solid fa-check"></i> Grand Qawwali Access</span>
+                  <span><i class="fa-solid fa-check"></i> Royal Baithak Seating</span>
+                  <span><i class="fa-solid fa-check"></i> Kashmiri Chai & Sweets</span>
+                  <span><i class="fa-solid fa-check"></i> Encrypted QR Gate Pass</span>
+                </div>
+              </div>
+
+              <div class="pass-price-box">
+                <div>
+                  <div class="pass-price-label">Pass Fee</div>
+                  <div class="pass-price-sub" id="ticket-price-badge">Standard Rate</div>
+                </div>
+                <div class="pass-price-main" id="ticket-card-price">PKR 4,000</div>
+              </div>
+            </div>
+
+            <!-- Privilege / Referral Code inside Pass Box -->
+            <div class="promo-code-container">
               <label class="form-label" for="reg-referral">
-                <i class="fa-solid fa-gift text-gold"></i> Invitation / Privilege Code (Optional)
+                <i class="fa-solid fa-tags text-gold"></i> Have an Invitation or Referral Code?
               </label>
               <div class="input-with-button">
-                <input type="text" id="reg-referral" class="form-input" placeholder="e.g. SUFI20 or VIP Invitation Code" style="text-transform: uppercase;">
+                <input type="text" id="reg-referral" class="form-input" placeholder="Enter invitation or referral code" style="text-transform: uppercase;">
                 <button type="button" class="btn-secondary" onclick="applyReferralCode()">
                   <i class="fa-solid fa-circle-check"></i> Apply Code
                 </button>
               </div>
-              <span class="form-helper" id="referral-feedback" style="margin-top: 4px;"></span>
+              <div class="referral-feedback-box" id="referral-feedback"></div>
             </div>
           </div>
 
-          <!-- Payment Instructions Card -->
-          <div class="payment-box">
+          <!-- 3. Official Payment Channels (QR Code Only) -->
+          <div class="form-section-title">
+            <i class="fa-solid fa-qrcode text-gold"></i> Official Payment Details
+          </div>
+
+          <div class="payment-box" id="payment-box-section">
             <div class="payment-box-title">
-              <i class="fa-solid fa-receipt text-gold"></i>
-              <span>Official Payment Channels • Due Amount: <strong id="display-due-amount" style="color: var(--gold-light);">PKR 4,000</strong></span>
+              <span><i class="fa-solid fa-qrcode text-gold"></i> Official Payment QR Code</span>
+              <span class="due-badge">Amount Due: <strong id="display-due-amount" style="color: var(--gold-light);">PKR 4,000</strong></span>
             </div>
-            
-            <p style="font-size: 13px; color: var(--text-secondary); margin-bottom: 15px;">
-              Please transfer your pass fee to any official channel below, take a screenshot, and upload the proof:
-            </p>
 
-            <div class="payment-accounts-grid">
-              <div class="account-pill">
-                <div class="channel-name"><i class="fa-solid fa-building-columns"></i> Meezan Bank Limited</div>
-                <div style="font-size: 12px; color: #a1a1aa;">Title: Mehfil-e-Sama Trust</div>
-                <div class="account-number">
-                  <span id="iban-val">PK64MEZN0001020304050607</span>
-                  <button type="button" class="copy-icon-btn" onclick="copyToClipboard('PK64MEZN0001020304050607', this)" title="Copy IBAN">
-                    <i class="fa-regular fa-copy"></i>
-                  </button>
-                </div>
+            <!-- Payment QR Code Display (QR Code Only) -->
+            <div id="payment-qr-area" style="text-align: center; margin: 12px 0 18px 0;">
+              <p style="font-size: 13px; color: var(--text-secondary); margin-bottom: 12px;">
+                Scan the official QR code below via Raast or any banking app to complete payment:
+              </p>
+              <div class="payment-qr-frame">
+                <img id="payment-qr-img" src="./images/qr-payment-4000.png" alt="Official Payment QR Code">
               </div>
+              <div id="payment-qr-subtext" style="font-size: 12px; color: var(--gold-light); margin-top: 8px; font-weight: 600;">
+                Scan to pay PKR 4,000 via Raast / Banking App
+              </div>
+            </div>
 
-              <div class="account-pill">
-                <div class="channel-name"><i class="fa-solid fa-mobile-screen"></i> JazzCash / EasyPaisa</div>
-                <div style="font-size: 12px; color: #a1a1aa;">Title: Muhammad Ahmad (Treasurer)</div>
-                <div class="account-number">
-                  <span id="phone-val">0300-1234567</span>
-                  <button type="button" class="copy-icon-btn" onclick="copyToClipboard('0300-1234567', this)" title="Copy Mobile">
-                    <i class="fa-regular fa-copy"></i>
-                  </button>
+            <!-- Manual Transfer Option (Collapsible for users on same device) -->
+            <div class="manual-bank-details" style="margin-top: 14px; border-top: 1px dashed rgba(212, 175, 55, 0.2); padding-top: 12px;">
+              <details style="cursor: pointer;">
+                <summary style="font-size: 12px; color: var(--text-muted); outline: none; user-select: none;">
+                  <i class="fa-solid fa-building-columns text-gold"></i> Or transfer manually via Bank Account / IBAN
+                </summary>
+                <div class="account-pill" style="margin-top: 10px;">
+                  <div class="channel-header">
+                    <div class="channel-name"><i class="fa-solid fa-building-columns"></i> Al Baraka Bank</div>
+                    <span class="official-tag">Official Channel</span>
+                  </div>
+                  <div class="account-detail-row">
+                    <span class="detail-label">Account Title</span>
+                    <span class="detail-value">Muhammad Ahmed</span>
+                  </div>
+                  <div class="account-detail-row">
+                    <span class="detail-label">Account Number</span>
+                    <div class="account-number-copy">
+                      <span class="mono-num" id="acct-num-val">0104729656019</span>
+                      <button type="button" class="copy-pill-btn" onclick="copyToClipboard('0104729656019', this)" title="Copy Account Number">
+                        <i class="fa-regular fa-copy"></i> <span>Copy</span>
+                      </button>
+                    </div>
+                  </div>
+                  <div class="account-detail-row">
+                    <span class="detail-label">IBAN</span>
+                    <div class="account-number-copy">
+                      <span class="mono-num iban-text" id="iban-val">PK62AIIN0000104729656019</span>
+                      <button type="button" class="copy-pill-btn" onclick="copyToClipboard('PK62AIIN0000104729656019', this)" title="Copy IBAN">
+                        <i class="fa-regular fa-copy"></i> <span>Copy</span>
+                      </button>
+                    </div>
+                  </div>
                 </div>
-              </div>
+              </details>
             </div>
 
             <!-- Verification Fields -->
-            <div class="form-grid" style="margin-bottom: 15px;">
+            <div class="form-grid" style="margin-bottom: 14px;">
               <div class="form-group">
                 <label class="form-label" for="pay-trans-id">Transaction / Reference ID</label>
                 <input type="text" id="pay-trans-id" class="form-input" placeholder="e.g. 9876543210 or TRX-12345">
@@ -233,13 +277,13 @@
               <div class="dropzone" id="receipt-dropzone" onclick="document.getElementById('receipt-file').click()">
                 <i class="fa-solid fa-cloud-arrow-up"></i>
                 <div class="dropzone-text">Click or drag & drop payment screenshot here</div>
-                <div style="font-size: 11px; color: var(--text-muted); margin-top: 4px;">PNG, JPG, or JPEG up to 15MB</div>
+                <div style="font-size: 11px; color: var(--text-muted); margin-top: 3px;">PNG, JPG, or JPEG up to 15MB</div>
               </div>
               <input type="file" id="receipt-file" accept="image/*" style="display: none;" onchange="handleFileSelect(event)">
               <div class="preview-container" id="preview-container">
                 <img id="preview-image" class="preview-image" src="" alt="Receipt Preview">
                 <div style="margin-top: 8px;">
-                  <button type="button" class="btn-secondary" style="padding: 4px 12px; font-size: 11px;" onclick="removeSelectedFile()">Remove Image</button>
+                  <button type="button" class="btn-secondary" style="padding: 4px 12px; font-size: 11px; min-height: 32px;" onclick="removeSelectedFile()">Remove Image</button>
                 </div>
               </div>
             </div>
@@ -247,7 +291,7 @@
 
           <!-- Submit Button -->
           <button type="submit" class="btn-primary" id="btn-submit-registration">
-            <i class="fa-solid fa-sparkles"></i> Reserve My Mehfil Pass
+            <i class="fa-solid fa-sparkles"></i> <span id="submit-btn-text">Reserve My Sur o Suroor Pass</span>
           </button>
         </form>
       </section>
@@ -256,15 +300,15 @@
            VIEW 2: CHECK E-PASS STATUS
            ===================================================================== -->
       <section class="view-section" id="view-status">
-        <div style="text-align: center; margin-bottom: 25px;">
-          <h2 class="font-serif" style="font-size: 22px; color: var(--gold-light); margin-bottom: 6px;">Check Your E-Pass Status</h2>
-          <p style="font-size: 13px; color: var(--text-muted);">Enter your Ticket ID, CNIC, or registered Email to verify your admission pass.</p>
+        <div class="section-heading">
+          <h2 class="font-serif">Check Your E-Pass Status</h2>
+          <p>Enter your Ticket ID, CNIC, or registered Email to verify your admission pass.</p>
         </div>
 
-        <form id="status-check-form" onsubmit="handleStatusLookup(event)" style="max-width: 580px; margin: 0 auto 30px auto;">
+        <form id="status-check-form" onsubmit="handleStatusLookup(event)" style="max-width: 580px; margin: 0 auto 24px auto;">
           <div class="input-with-button">
-            <input type="text" id="status-query" class="form-input" required placeholder="Enter Ticket ID (e.g. SAMA-1A2B), CNIC, or Email">
-            <button type="submit" class="btn-secondary" id="btn-search-status" style="padding: 12px 24px;">
+            <input type="text" id="status-query" class="form-input" required placeholder="Ticket ID (e.g. SUR-1A2B), CNIC, or Email">
+            <button type="submit" class="btn-secondary" id="btn-search-status">
               <i class="fa-solid fa-magnifying-glass"></i> Check Pass
             </button>
           </div>
@@ -281,32 +325,32 @@
   <!-- Registration Success Modal -->
   <div class="modal-overlay" id="success-modal">
     <div class="modal-content" style="text-align: center;">
-      <button class="modal-close-btn" onclick="closeSuccessModal()">&times;</button>
-      <div style="font-size: 40px; color: var(--gold-primary); margin-bottom: 10px;">✨</div>
-      <div class="hero-urdu-title" style="font-size: 28px;">محفلِ سماع</div>
-      <h3 class="font-serif" style="color: var(--gold-light); margin-bottom: 12px; font-size: 20px;">Pass Reservation Received!</h3>
-      <p style="font-size: 13px; color: var(--text-secondary); line-height: 1.6; margin-bottom: 16px;">
+      <button class="modal-close-btn" onclick="closeSuccessModal()" aria-label="Close modal">&times;</button>
+      <div style="font-size: 36px; color: var(--gold-primary); margin-bottom: 8px;">✨</div>
+      <div class="hero-urdu-title" style="font-size: 26px;">سُر و سُرور</div>
+      <h3 class="font-serif" style="color: var(--gold-light); margin-bottom: 10px; font-size: 19px;">Pass Reservation Received!</h3>
+      <p style="font-size: 13px; color: var(--text-secondary); line-height: 1.5; margin-bottom: 14px;">
         Your reservation has been recorded under Ticket Code:
       </p>
-      <div id="modal-ticket-id" style="font-family: var(--font-mono); font-size: 24px; font-weight: 700; color: var(--gold-light); background: rgba(0,0,0,0.4); padding: 12px; border-radius: 8px; border: 1px dashed var(--gold-primary); margin-bottom: 20px;">
-        SAMA-XXXXXX
+      <div id="modal-ticket-id" style="font-family: var(--font-mono); font-size: 22px; font-weight: 700; color: var(--gold-light); background: rgba(0,0,0,0.4); padding: 10px; border-radius: 8px; border: 1px dashed var(--gold-primary); margin-bottom: 16px;">
+        SUR-XXXXXX
       </div>
-      <p style="font-size: 12px; color: var(--text-muted); margin-bottom: 24px;">
-        Our admissions committee will verify your payment details. Once approved, your encrypted QR Gate Pass will be delivered directly to your email address and can be accessed on the <strong>Check E-Pass Status</strong> tab.
+      <p style="font-size: 12px; color: var(--text-muted); margin-bottom: 20px; line-height: 1.5;">
+        Our admissions committee will verify your payment details. Once approved, your encrypted QR Gate Pass will be delivered directly to your email address and can also be tracked on the <strong>Check Pass</strong> tab.
       </p>
-      <div style="display: flex; gap: 12px;">
-        <button type="button" class="btn-secondary" style="flex: 1;" onclick="closeSuccessModal()">Close</button>
-        <button type="button" class="btn-primary" style="flex: 1; padding: 12px;" onclick="goToStatusWithTicket()">Track My Pass</button>
+      <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+        <button type="button" class="btn-secondary" style="flex: 1; min-height: 42px;" onclick="closeSuccessModal()">Close</button>
+        <button type="button" class="btn-primary" style="flex: 1; padding: 10px; min-height: 42px;" onclick="goToStatusWithTicket()">Track My Pass</button>
       </div>
     </div>
   </div>
 
-  <!-- Footer -->
+  <!-- Site Footer -->
   <footer class="site-footer">
-    <div style="font-family: var(--font-urdu); font-size: 18px; color: var(--gold-light); margin-bottom: 6px;">محفلِ سماع • بزمِ خسرو</div>
-    <div>Spiritual Heritage & Classical Music Secretariat • Lahore Heritage Foundation</div>
-    <div style="margin-top: 8px; font-size: 11px;">
-      In the sacred tradition of Hazrat Amir Khusrau & Baba Bulleh Shah. For inquiries: <a href="mailto:sama@mehfil.org">sama@mehfil.org</a>
+    <div style="font-family: var(--font-urdu); font-size: 18px; color: var(--gold-light); margin-bottom: 4px;">سُر و سُرور</div>
+    <div>Sur o Suroor Secretariat</div>
+    <div style="margin-top: 6px; font-size: 11px; color: var(--text-muted);">
+      Venue: Gulberg, TBA • Date & Time: TBA
     </div>
   </footer>
 

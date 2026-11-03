@@ -1,11 +1,11 @@
 /**
- * Mehfil-e-Sama Qawwali Ticketing System - Public Application Controller
- * Handles Pass Reservation (Single 4,000 PKR Ticket), Verification, & Oriental Soundscape
+ * Sur o Suroor - Mystical Qawwali Ticketing System - Public Application Controller
+ * Handles Pass Reservation, 25% Referral Codes, Al Baraka Bank details, Verification & Ambient Soundscape
  */
 
 const STATE = {
   currentTab: 'register',
-  selectedTier: 'Mehfil-e-Sama Pass',
+  selectedTier: 'Sur o Suroor Pass',
   basePrice: 4000,
   discountPercent: 0,
   finalPrice: 4000,
@@ -52,31 +52,76 @@ function switchTab(tabName) {
   const targetBtn = document.getElementById(`tab-btn-${tabName}`);
   if (targetView) targetView.classList.add('active');
   if (targetBtn) targetBtn.classList.add('active');
+
+  // Scroll smoothly to top of view card on mobile
+  if (window.innerWidth < 768) {
+    targetView?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
 }
 
 // -----------------------------------------------------------------------------
-// Price Calculation (Single 4,000 PKR Ticket)
+// Price Calculation (Base 4,000 PKR, 25% Promo Discount = 3,000 PKR)
 // -----------------------------------------------------------------------------
 function recalculatePrice() {
   let payable = STATE.basePrice;
 
+  const dueEl = document.getElementById('display-due-amount');
+  const ticketCardPrice = document.getElementById('ticket-card-price');
+  const ticketBadge = document.getElementById('ticket-price-badge');
+  const hiddenFinal = document.getElementById('selected-final-price');
+  const submitBtnText = document.getElementById('submit-btn-text');
+  const qrImg = document.getElementById('payment-qr-img');
+  const qrSubtext = document.getElementById('payment-qr-subtext');
+  const qrArea = document.getElementById('payment-qr-area');
+
   if (STATE.isGuest) {
     payable = 0;
+    STATE.finalPrice = 0;
+    const formatted = 'PKR 0 (Free Entry)';
+    if (dueEl) dueEl.textContent = 'PKR 0 (Free Entry Applied)';
+    if (ticketCardPrice) {
+      ticketCardPrice.innerHTML = `<span class="original-price-strike">PKR 4,000</span> <span style="color: var(--emerald-bright);">PKR 0</span>`;
+    }
+    if (ticketBadge) {
+      ticketBadge.textContent = 'Special Guest Pass (100% Free Entry)';
+      ticketBadge.style.color = 'var(--emerald-bright)';
+    }
+    if (hiddenFinal) hiddenFinal.value = formatted;
+    if (submitBtnText) submitBtnText.textContent = 'Confirm Free Guest Admission';
+    if (qrArea) qrArea.style.display = 'none';
   } else if (STATE.discountPercent > 0) {
     payable = Math.round(STATE.basePrice * (1 - STATE.discountPercent / 100));
+    STATE.finalPrice = payable;
+    const formatted = `PKR ${payable.toLocaleString()}`;
+    if (dueEl) dueEl.textContent = formatted;
+    if (ticketCardPrice) {
+      ticketCardPrice.innerHTML = `<span class="original-price-strike">PKR 4,000</span> ${formatted}`;
+    }
+    if (ticketBadge) {
+      ticketBadge.textContent = '25% Referral Discount (-PKR 1,000)';
+      ticketBadge.style.color = '#10b981';
+    }
+    if (hiddenFinal) hiddenFinal.value = formatted;
+    if (submitBtnText) submitBtnText.textContent = `Reserve Pass • ${formatted}`;
+    if (qrArea) qrArea.style.display = 'block';
+    if (qrImg) qrImg.src = '/images/qr-payment-3000.png';
+    if (qrSubtext) qrSubtext.textContent = 'Scan to pay PKR 3,000 via Raast / Banking App';
+  } else {
+    payable = STATE.basePrice;
+    STATE.finalPrice = payable;
+    const formatted = `PKR ${payable.toLocaleString()}`;
+    if (dueEl) dueEl.textContent = formatted;
+    if (ticketCardPrice) ticketCardPrice.textContent = formatted;
+    if (ticketBadge) {
+      ticketBadge.textContent = 'Standard Rate';
+      ticketBadge.style.color = 'var(--text-muted)';
+    }
+    if (hiddenFinal) hiddenFinal.value = formatted;
+    if (submitBtnText) submitBtnText.textContent = `Reserve Pass • ${formatted}`;
+    if (qrArea) qrArea.style.display = 'block';
+    if (qrImg) qrImg.src = '/images/qr-payment-4000.png';
+    if (qrSubtext) qrSubtext.textContent = 'Scan to pay PKR 4,000 via Raast / Banking App';
   }
-
-  STATE.finalPrice = payable;
-  const formatted = payable === 0 ? 'Complimentary VIP Honor' : `PKR ${payable.toLocaleString()}`;
-
-  const dueEl = document.getElementById('display-due-amount');
-  if (dueEl) dueEl.textContent = formatted;
-
-  const ticketCardPrice = document.getElementById('ticket-card-price');
-  if (ticketCardPrice) ticketCardPrice.textContent = formatted;
-
-  const hiddenFinal = document.getElementById('selected-final-price');
-  if (hiddenFinal) hiddenFinal.value = formatted;
 }
 
 // -----------------------------------------------------------------------------
@@ -95,7 +140,7 @@ async function applyReferralCode() {
     return;
   }
 
-  feedback.textContent = 'Verifying invitation code...';
+  feedback.textContent = 'Verifying referral code...';
   feedback.style.color = 'var(--text-muted)';
 
   try {
@@ -126,7 +171,7 @@ async function applyReferralCode() {
 }
 
 // -----------------------------------------------------------------------------
-// CNIC Hyphen Formatting
+// CNIC Hyphen Formatting: 35202-1234567-1
 // -----------------------------------------------------------------------------
 function formatCnicInput(input) {
   let val = input.value.replace(/\D/g, '');
@@ -153,41 +198,45 @@ function setupDropzone() {
   const dropzone = document.getElementById('receipt-dropzone');
   if (!dropzone) return;
 
-  ['dragenter', 'dragover'].forEach(eventName => {
-    dropzone.addEventListener(eventName, (e) => {
+  ['dragenter', 'dragover'].forEach(name => {
+    dropzone.addEventListener(name, (e) => {
       e.preventDefault();
-      e.stopPropagation();
       dropzone.classList.add('dragover');
     });
   });
 
-  ['dragleave', 'drop'].forEach(eventName => {
-    dropzone.addEventListener(eventName, (e) => {
+  ['dragleave', 'drop'].forEach(name => {
+    dropzone.addEventListener(name, (e) => {
       e.preventDefault();
-      e.stopPropagation();
       dropzone.classList.remove('dragover');
     });
   });
 
   dropzone.addEventListener('drop', (e) => {
-    const files = e.dataTransfer.files;
-    if (files.length > 0) {
-      handleFile(files[0]);
+    const dt = e.dataTransfer;
+    if (dt && dt.files && dt.files[0]) {
+      processSelectedFile(dt.files[0]);
     }
   });
 }
 
-function handleFileSelect(e) {
-  if (e.target.files.length > 0) {
-    handleFile(e.target.files[0]);
+function handleFileSelect(event) {
+  const file = event.target.files && event.target.files[0];
+  if (file) {
+    processSelectedFile(file);
   }
 }
 
-function handleFile(file) {
+function processSelectedFile(file) {
   if (!file.type.startsWith('image/')) {
-    alert('Please upload an image file (PNG, JPG, or JPEG).');
+    alert('Please select a valid image file (PNG, JPG, JPEG).');
     return;
   }
+  if (file.size > 15 * 1024 * 1024) {
+    alert('File size exceeds 15MB limit.');
+    return;
+  }
+
   STATE.selectedFile = file;
 
   const reader = new FileReader();
@@ -195,7 +244,6 @@ function handleFile(file) {
     const preview = document.getElementById('preview-image');
     const container = document.getElementById('preview-container');
     const dropzone = document.getElementById('receipt-dropzone');
-
     if (preview && container && dropzone) {
       preview.src = e.target.result;
       container.style.display = 'block';
@@ -215,14 +263,40 @@ function removeSelectedFile() {
   if (dropzone) dropzone.style.display = 'block';
 }
 
+// -----------------------------------------------------------------------------
+// Clipboard Copy with Visual Tooltip Feedback
+// -----------------------------------------------------------------------------
 function copyToClipboard(text, btn) {
-  navigator.clipboard.writeText(text).then(() => {
-    const icon = btn.querySelector('i');
-    if (icon) {
-      icon.className = 'fa-solid fa-check';
-      setTimeout(() => { icon.className = 'fa-regular fa-copy'; }, 2000);
-    }
-  });
+  const origHtml = btn.innerHTML;
+  
+  const onSuccess = () => {
+    btn.innerHTML = '<i class="fa-solid fa-check"></i> <span>Copied!</span>';
+    btn.style.borderColor = 'var(--emerald-bright)';
+    btn.style.color = '#6ee7b7';
+    setTimeout(() => {
+      btn.innerHTML = origHtml;
+      btn.style.borderColor = '';
+      btn.style.color = '';
+    }, 2000);
+  };
+
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(text).then(onSuccess).catch(() => {
+      fallbackCopy(text, onSuccess);
+    });
+  } else {
+    fallbackCopy(text, onSuccess);
+  }
+}
+
+function fallbackCopy(text, cb) {
+  const tempInput = document.createElement('input');
+  tempInput.value = text;
+  document.body.appendChild(tempInput);
+  tempInput.select();
+  document.execCommand('copy');
+  document.body.removeChild(tempInput);
+  cb();
 }
 
 // -----------------------------------------------------------------------------
@@ -234,7 +308,7 @@ async function handleRegistrationSubmit(e) {
   const btn = document.getElementById('btn-submit-registration');
   const originalText = btn.innerHTML;
   btn.disabled = true;
-  btn.innerHTML = '<i class="fa-solid fa-circle-notch fa-spin"></i> Reserving Pass...';
+  btn.innerHTML = '<i class="fa-solid fa-circle-notch fa-spin"></i> Processing Reservation...';
 
   try {
     const formData = new FormData();
@@ -244,7 +318,7 @@ async function handleRegistrationSubmit(e) {
     formData.append('email', document.getElementById('reg-email').value.trim());
     formData.append('phone', document.getElementById('reg-phone').value.trim());
     formData.append('organization', document.getElementById('reg-org').value.trim());
-    formData.append('category', 'Mehfil-e-Sama Pass');
+    formData.append('category', 'Sur o Suroor Pass');
     formData.append('referral_code', document.getElementById('reg-referral').value.trim());
     formData.append('fee_amount', document.getElementById('selected-final-price').value);
     formData.append('transaction_id', document.getElementById('pay-trans-id').value.trim());
@@ -273,8 +347,12 @@ async function handleRegistrationSubmit(e) {
     // Reset form
     document.getElementById('registration-form').reset();
     removeSelectedFile();
+    STATE.discountPercent = 0;
+    STATE.isGuest = false;
+    document.getElementById('referral-feedback').textContent = '';
+    recalculatePrice();
   } catch (err) {
-    alert(`Registration Error: ${err.message}`);
+    alert(`Registration Notice: ${err.message}`);
   } finally {
     btn.disabled = false;
     btn.innerHTML = originalText;
@@ -309,7 +387,7 @@ async function handleStatusLookup(e) {
   btn.disabled = true;
   btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Checking...';
   container.style.display = 'block';
-  container.innerHTML = '<div style="text-align: center; padding: 30px; color: var(--gold-light);">Searching for registration record...</div>';
+  container.innerHTML = '<div style="text-align: center; padding: 25px; color: var(--gold-light);">Searching for admission record...</div>';
 
   try {
     const res = await fetch('/api/check_status', {
@@ -323,9 +401,9 @@ async function handleStatusLookup(e) {
     if (!res.ok || !data.success) {
       container.innerHTML = `
         <div class="pass-result-card" style="border-color: rgba(244, 63, 94, 0.4);">
-          <div style="font-size: 36px; color: #f43f5e; margin-bottom: 10px;">✦</div>
-          <h3 class="font-serif" style="color: #fda4af; margin-bottom: 8px;">No Record Found</h3>
-          <p style="font-size: 13px; color: var(--text-muted); max-width: 450px; margin: 0 auto;">
+          <div style="font-size: 32px; color: #f43f5e; margin-bottom: 8px;">✦</div>
+          <h3 class="font-serif" style="color: #fda4af; margin-bottom: 8px; font-size: 18px;">No Record Found</h3>
+          <p style="font-size: 13px; color: var(--text-muted); max-width: 440px; margin: 0 auto;">
             ${data.message || 'We could not locate any active pass with those details. Please check for typos in your CNIC or Ticket ID.'}
           </p>
         </div>
@@ -349,50 +427,38 @@ async function handleStatusLookup(e) {
 }
 
 function renderPassCard(entry, container) {
-  const isApproved = entry.status === 'Approved';
-  const isPending = entry.status === 'Pending';
-  const isDeclined = entry.status === 'Declined';
-
   let statusBadgeClass = 'status-pending';
-  let statusText = 'Verification Pending';
-  if (isApproved) {
-    statusBadgeClass = 'status-approved';
-    statusText = 'Confirmed & Active Pass';
-  } else if (isDeclined) {
-    statusBadgeClass = 'status-declined';
-    statusText = 'Reservation Declined';
-  }
-
+  let statusText = 'Payment Verification Pending';
   let bodyContent = '';
 
-  if (isPending) {
-    bodyContent = `
-      <div style="font-size: 40px; color: #f59e0b; margin: 15px 0;">⏳</div>
-      <h3 class="font-serif" style="color: #fcd34d; margin-bottom: 8px;">Under Verification</h3>
-      <p style="font-size: 13px; color: var(--text-secondary); max-width: 500px; margin: 0 auto 20px auto; line-height: 1.6;">
-        Your payment screenshot and credentials are currently being reviewed by the admissions desk. Once verified, your encrypted QR Gate Pass will appear right here and will be dispatched to <strong>${entry.email}</strong>.
-      </p>
-    `;
-  } else if (isDeclined) {
-    bodyContent = `
-      <div style="font-size: 40px; color: #f43f5e; margin: 15px 0;">✗</div>
-      <h3 class="font-serif" style="color: #fda4af; margin-bottom: 8px;">Reservation Not Confirmed</h3>
-      <p style="font-size: 13px; color: var(--text-secondary); max-width: 480px; margin: 0 auto 20px auto; line-height: 1.6;">
-        This registration could not be verified with the provided payment receipt. For assistance or re-submission, please contact the organizing committee at <strong>sama@mehfil.org</strong>.
-      </p>
-    `;
-  } else if (isApproved && entry.qr_data_url) {
+  if (entry.status === 'Approved') {
+    statusBadgeClass = 'status-approved';
+    statusText = 'Verified Admission Pass';
     bodyContent = `
       <div class="pass-qr-frame">
-        <img src="${entry.qr_data_url}" alt="Gate Pass QR Code" id="pass-qr-image">
+        <img src="${entry.qrDataUrl || '/images/sur-o-suroor-icon.png'}" alt="Encrypted Gate Pass QR Code">
       </div>
-      <div style="font-size: 12px; color: var(--emerald-bright); margin-bottom: 15px;">
-        <i class="fa-solid fa-circle-check"></i> Present this official QR code at the entrance
+      <div style="font-size: 12px; color: #a1a1aa; margin-top: 4px;">
+        Present this encrypted QR code at the entrance for barcode gate scanning.
       </div>
-      <div style="display: flex; gap: 10px; justify-content: center; margin-bottom: 15px;">
-        <button type="button" class="btn-secondary" onclick="window.print()">
-          <i class="fa-solid fa-print"></i> Print / Save Pass
-        </button>
+    `;
+  } else if (entry.status === 'Declined') {
+    statusBadgeClass = 'status-declined';
+    statusText = 'Reservation Declined';
+    bodyContent = `
+      <div style="padding: 20px 10px; color: #fda4af;">
+        <p style="font-size: 13px; line-height: 1.6;">
+          Your registration could not be verified by the secretariat. Reason: ${entry.notes || 'Payment proof could not be verified against the official bank ledger.'}
+        </p>
+      </div>
+    `;
+  } else {
+    bodyContent = `
+      <div style="padding: 20px 10px;">
+        <i class="fa-solid fa-clock-rotate-left" style="font-size: 32px; color: #f59e0b; margin-bottom: 10px;"></i>
+        <p style="font-size: 13px; color: var(--text-secondary); line-height: 1.6; max-width: 460px; margin: 0 auto;">
+          Your payment screenshot has been logged. Our admissions committee is verifying the bank transfer. Once approved, your encrypted QR code will appear here automatically.
+        </p>
       </div>
     `;
   }
@@ -403,8 +469,8 @@ function renderPassCard(entry, container) {
         ${statusText}
       </div>
 
-      <div style="font-family: var(--font-urdu); font-size: 24px; color: var(--gold-light);">محفلِ سماع • بزمِ خسرو</div>
-      <div style="font-family: var(--font-mono); font-size: 22px; font-weight: 700; color: #ffffff; letter-spacing: 2px; margin: 4px 0 15px 0;">
+      <div style="font-family: var(--font-urdu); font-size: 24px; color: var(--gold-light);">سُر و سُرور</div>
+      <div style="font-family: var(--font-mono); font-size: 20px; font-weight: 700; color: #ffffff; letter-spacing: 2px; margin: 2px 0 12px 0;">
         ${entry.ticket_id}
       </div>
 
@@ -421,7 +487,11 @@ function renderPassCard(entry, container) {
         </div>
         <div class="pass-meta-item">
           <div class="label">Pass Type</div>
-          <div class="val">${entry.category}</div>
+          <div class="val">${entry.category || 'Sur o Suroor Pass'}</div>
+        </div>
+        <div class="pass-meta-item">
+          <div class="label">Pass Fee</div>
+          <div class="val">${entry.fee_amount || 'PKR 4,000'}</div>
         </div>
         <div class="pass-meta-item">
           <div class="label">Gate Status</div>
@@ -429,10 +499,18 @@ function renderPassCard(entry, container) {
             ${entry.qr_scanned ? 'Already Checked In' : 'Valid for Admission'}
           </div>
         </div>
+        <div class="pass-meta-item">
+          <div class="label">Date & Time</div>
+          <div class="val">TBA</div>
+        </div>
+        <div class="pass-meta-item">
+          <div class="label">Venue</div>
+          <div class="val">Gulberg, TBA</div>
+        </div>
       </div>
 
-      <div style="font-size: 11px; color: var(--text-muted); border-top: 1px dashed var(--border-gold); padding-top: 12px; margin-top: 15px;">
-        Gate opens at 7:30 PM • The Royal Heritage Courtyard, Lahore • Please bring your physical CNIC
+      <div style="font-size: 11px; color: var(--text-muted); border-top: 1px dashed var(--border-gold); padding-top: 10px; margin-top: 14px;">
+        Venue: Gulberg, TBA • Date & Time: TBA • Physical CNIC required for admission
       </div>
     </div>
   `;
@@ -451,13 +529,13 @@ function toggleAmbientMusic() {
     STATE.isMusicPlaying = false;
     btn.classList.remove('playing');
     waveBars.classList.remove('active');
-    btnText.textContent = 'Mehfil Ambience';
+    btnText.textContent = 'Ambience';
   } else {
     startAmbientDrone();
     STATE.isMusicPlaying = true;
     btn.classList.add('playing');
     waveBars.classList.add('active');
-    btnText.textContent = 'Ambience: On';
+    btnText.textContent = 'On';
   }
 }
 
@@ -474,16 +552,16 @@ function startAmbientDrone() {
 
     const masterGain = ctx.createGain();
     masterGain.gain.setValueAtTime(0.001, ctx.currentTime);
-    masterGain.gain.exponentialRampToValueAtTime(0.18, ctx.currentTime + 3);
+    masterGain.gain.exponentialRampToValueAtTime(0.16, ctx.currentTime + 3);
     masterGain.connect(ctx.destination);
     STATE.musicNodes.push(masterGain);
 
     // Fundamental Tanpura Frequencies (C# / Kharaj Pancham tuning)
     const frequencies = [
-      { f: 138.6, type: 'sawtooth', gain: 0.08, lfoRate: 0.25 },
-      { f: 207.65, type: 'triangle', gain: 0.12, lfoRate: 0.35 },
-      { f: 277.2, type: 'sine', gain: 0.06, lfoRate: 0.18 },
-      { f: 69.3, type: 'sine', gain: 0.14, lfoRate: 0.1 }
+      { f: 138.6, type: 'sawtooth', gain: 0.07, lfoRate: 0.25 },
+      { f: 207.65, type: 'triangle', gain: 0.11, lfoRate: 0.35 },
+      { f: 277.2, type: 'sine', gain: 0.05, lfoRate: 0.18 },
+      { f: 69.3, type: 'sine', gain: 0.12, lfoRate: 0.1 }
     ];
 
     frequencies.forEach(spec => {

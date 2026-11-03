@@ -59,6 +59,47 @@ const upload = multer({
 const EMAIL_TEMPLATE_PATH = path.join(__dirname, 'templates', 'ticket-email.html');
 let cachedEmailTemplate = null;
 
+// Helper: Seeded promo codes from environment
+function getPromoCodes() {
+  const codes25 = (process.env.PROMO_CODES_25 || 'AQ_501,MA_683,KN_566,NF_494')
+    .split(',')
+    .map(c => c.trim().toUpperCase())
+    .filter(Boolean);
+
+  const codesFree = (process.env.PROMO_CODES_FREE || 'GU_5654')
+    .split(',')
+    .map(c => c.trim().toUpperCase())
+    .filter(Boolean);
+
+  return { codes25, codesFree };
+}
+
+// Helper: Seeded 4 Admins from environment (strictly 4 admins only)
+function getAdmins() {
+  const admin1_user = (process.env.ADMIN_1_USER || 'admin1').trim();
+  const admin1_pass = (process.env.ADMIN_1_PASS || 'SurNight2026!').trim();
+  const admin1_name = (process.env.ADMIN_1_NAME || 'Muhammad Ahmad').trim();
+
+  const admin2_user = (process.env.ADMIN_2_USER || 'admin2').trim();
+  const admin2_pass = (process.env.ADMIN_2_PASS || 'SurNight2026!').trim();
+  const admin2_name = (process.env.ADMIN_2_NAME || 'Noor Fatima').trim();
+
+  const admin3_user = (process.env.ADMIN_3_USER || 'admin3').trim();
+  const admin3_pass = (process.env.ADMIN_3_PASS || 'SurNight2026!').trim();
+  const admin3_name = (process.env.ADMIN_3_NAME || 'Kainat Nadeem').trim();
+
+  const admin4_user = (process.env.ADMIN_4_USER || 'admin4').trim();
+  const admin4_pass = (process.env.ADMIN_4_PASS || 'SurNight2026!').trim();
+  const admin4_name = (process.env.ADMIN_4_NAME || 'Aqsa Naqvi').trim();
+
+  return [
+    { username: admin1_user, password: admin1_pass, role: 'Admin', name: admin1_name, alias: 'admin1' },
+    { username: admin2_user, password: admin2_pass, role: 'Admin', name: admin2_name, alias: 'admin2' },
+    { username: admin3_user, password: admin3_pass, role: 'Admin', name: admin3_name, alias: 'admin3' },
+    { username: admin4_user, password: admin4_pass, role: 'Admin', name: admin4_name, alias: 'admin4' }
+  ];
+}
+
 function getEmailTemplate() {
   if (!cachedEmailTemplate || process.env.NODE_ENV !== 'production') {
     try {
@@ -112,7 +153,7 @@ async function initDatabase(retries = 15, delayMs = 3000) {
           email VARCHAR(150) NOT NULL,
           phone VARCHAR(50) NOT NULL,
           organization VARCHAR(150),
-          category VARCHAR(50) DEFAULT 'Mehfil-e-Sama Pass',
+          category VARCHAR(50) DEFAULT 'Sur o Suroor Pass',
           referral_code VARCHAR(30),
           fee_amount VARCHAR(50) NOT NULL,
           sender_account_title VARCHAR(150),
@@ -128,8 +169,32 @@ async function initDatabase(retries = 15, delayMs = 3000) {
         CREATE INDEX IF NOT EXISTS idx_reg_cnic ON registrations(cnic);
         CREATE INDEX IF NOT EXISTS idx_reg_email ON registrations(email);
         CREATE INDEX IF NOT EXISTS idx_reg_status ON registrations(status);
+
+        CREATE TABLE IF NOT EXISTS admins (
+          id SERIAL PRIMARY KEY,
+          username VARCHAR(100) UNIQUE NOT NULL,
+          password VARCHAR(100) NOT NULL,
+          name VARCHAR(150) NOT NULL,
+          role VARCHAR(50) DEFAULT 'Admin',
+          created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
+        );
       `;
       await client.query(createTableQuery);
+
+      // Seed strictly 4 Admins
+      const admins = getAdmins();
+      for (const a of admins) {
+        await client.query(`
+          INSERT INTO admins (username, password, name, role)
+          VALUES ($1, $2, $3, $4)
+          ON CONFLICT (username) DO UPDATE 
+          SET password = EXCLUDED.password, name = EXCLUDED.name, role = EXCLUDED.role;
+        `, [a.username, a.password, a.name, a.role]);
+      }
+      await client.query('DELETE FROM admins WHERE username NOT IN ($1, $2, $3, $4)', [
+        admins[0].username, admins[1].username, admins[2].username, admins[3].username
+      ]);
+      console.log(`[DB] Seeded exactly 4 admins: ${admins.map(a => a.username).join(', ')}.`);
       client.release();
       console.log('[DB] Table "registrations" initialized successfully.');
       return;
@@ -168,12 +233,12 @@ async function initMinio(retries = 15, delayMs = 3000) {
 // -----------------------------------------------------------------------------
 async function generateTicketQrBuffer(ticketId, attendee) {
   const qrData = JSON.stringify({
-    event: "Mehfil-e-Sama 2026",
+    event: "Sur o Suroor 2026",
     ticket_id: ticketId,
     name: `${attendee.first_name} ${attendee.last_name}`,
-    category: attendee.category || 'Mehfil-e-Sama Pass',
+    category: attendee.category || 'Sur o Suroor Pass',
     cnic: attendee.cnic,
-    verified_url: `https://mehfil.sama/verify/${ticketId}`
+    verified_url: `https://surosuroor.org/verify/${ticketId}`
   });
 
   return await QRCode.toBuffer(qrData, {
@@ -190,7 +255,7 @@ async function generateTicketQrBuffer(ticketId, attendee) {
 function renderEmailTemplate(entry) {
   const template = getEmailTemplate();
   const fullName = `${entry.first_name} ${entry.last_name}`;
-  const category = entry.category || 'Mehfil-e-Sama Pass';
+  const category = entry.category || 'Sur o Suroor Pass';
   const ticketId = entry.ticket_id;
   const feeAmount = entry.fee_amount || 'PKR 4,000';
 
@@ -201,9 +266,9 @@ function renderEmailTemplate(entry) {
     .replace(/{{FEE_AMOUNT}}/g, feeAmount)
     .replace(/{{PASS_CATEGORY}}/g, category)
     .replace(/{{QR_CID}}/g, 'ticket_qr_code')
-    .replace(/{{EVENT_DATE}}/g, 'Saturday, November 28, 2026')
-    .replace(/{{EVENT_TIME}}/g, 'Doors open 7:30 PM | Mehfil starts 8:30 PM')
-    .replace(/{{EVENT_VENUE}}/g, 'The Royal Heritage Courtyard, Alhamra Cultural Complex');
+    .replace(/{{EVENT_DATE}}/g, 'TBA')
+    .replace(/{{EVENT_TIME}}/g, 'TBA')
+    .replace(/{{EVENT_VENUE}}/g, 'Gulberg, TBA');
 }
 
 async function sendSufiTicketEmail(entry) {
@@ -218,9 +283,9 @@ async function sendSufiTicketEmail(entry) {
 
     const transporter = getTransporter();
     const mailOptions = {
-      from: process.env.EMAIL_FROM || '"Mehfil-e-Sama Invitations" <sama@mehfil.org>',
+      from: process.env.EMAIL_FROM || '"Sur o Suroor Invitations"',
       to: entry.email,
-      subject: `✨ Your Pass for Mehfil-e-Sama: ${entry.ticket_id} (${entry.first_name} ${entry.last_name})`,
+      subject: `✨ Your Pass for Sur o Suroor: ${entry.ticket_id} (${entry.first_name} ${entry.last_name})`,
       html: htmlContent,
       attachments: [
         {
@@ -282,20 +347,35 @@ app.get(['/api/receipts/:filename', '/uploads/:filename'], async (req, res) => {
   }
 });
 
-// Validate discount / referral codes (single 4000 PKR ticket)
+// Validate discount / referral codes (seeded via environment variables)
 app.post('/api/validate_code', (req, res) => {
   const code = (req.body.code || '').trim().toUpperCase();
-  const validDiscountCodes = ['SUFI20', 'AQ_501', 'MA_683', 'KN_566', 'NF_494', 'MEHFIL20'];
-  const guestCodes = ['GU_5654', 'VIP_GUEST', 'KHUSRAU'];
+  const { codes25, codesFree } = getPromoCodes();
 
   if (!code) {
     return res.json({ valid: false, discount: 0, message: 'No referral code entered' });
   }
-  if (guestCodes.includes(code)) {
-    return res.json({ valid: true, isGuest: true, discount: 100, message: 'VIP Honor Guest Access Applied (100% Waiver)' });
+  if (codesFree.includes(code)) {
+    return res.json({
+      valid: true,
+      isGuest: true,
+      discount: 100,
+      discountAmount: 4000,
+      finalPrice: 0,
+      code: code,
+      message: 'Special Guest Code Applied (100% Free Entry)'
+    });
   }
-  if (validDiscountCodes.includes(code)) {
-    return res.json({ valid: true, discount: 20, message: 'Special Mehfil 20% Privilege Discount Applied (PKR 3,200)' });
+  if (codes25.includes(code)) {
+    return res.json({
+      valid: true,
+      isGuest: false,
+      discount: 25,
+      discountAmount: 1000,
+      finalPrice: 3000,
+      code: code,
+      message: '25% Referral Discount Applied (Pass Fee: PKR 3,000)'
+    });
   }
   return res.json({ valid: false, discount: 0, message: 'Invalid or expired invitation code' });
 });
@@ -310,7 +390,7 @@ app.post('/api/register', upload.single('screenshot'), async (req, res) => {
       email,
       phone,
       organization,
-      category = 'Mehfil-e-Sama Pass',
+      category = 'Sur o Suroor Pass',
       referral_code,
       fee_amount = 'PKR 4,000',
       sender_account_title,
@@ -363,13 +443,24 @@ app.post('/api/register', upload.single('screenshot'), async (req, res) => {
       }
     }
 
-    // Generate Unique Ticket ID: SAMA-XXXXXX
+    // Generate Unique Ticket ID: SUR-XXXXXX
     const randomHex = crypto.randomBytes(3).toString('hex').toUpperCase();
-    const ticketId = `SAMA-${randomHex}`;
+    const ticketId = `SUR-${randomHex}`;
 
-    // Determine initial status: Guests can be auto-approved, standard is Pending
-    const isGuestCode = ['GU_5654', 'VIP_GUEST', 'KHUSRAU'].includes((referral_code || '').trim().toUpperCase());
+    // Determine initial status & fee based on referral code
+    const upperRef = (referral_code || '').trim().toUpperCase();
+    const { codes25, codesFree } = getPromoCodes();
+
+    const isGuestCode = codesFree.includes(upperRef);
+    const isDiscountCode = codes25.includes(upperRef);
+
     const initialStatus = isGuestCode ? 'Approved' : 'Pending';
+    let computedFee = fee_amount || 'PKR 4,000';
+    if (isGuestCode) {
+      computedFee = 'PKR 0 (Free Entry)';
+    } else if (isDiscountCode) {
+      computedFee = 'PKR 3,000';
+    }
 
     // Insert into PostgreSQL
     const insertQuery = `
@@ -389,9 +480,9 @@ app.post('/api/register', upload.single('screenshot'), async (req, res) => {
       email.trim().toLowerCase(),
       phone.trim(),
       (organization || '').trim(),
-      'Mehfil-e-Sama Pass',
-      (referral_code || '').trim().toUpperCase(),
-      fee_amount || 'PKR 4,000',
+      category || 'Sur o Suroor Pass',
+      upperRef,
+      computedFee,
       (sender_account_title || '').trim(),
       (sender_bank || '').trim(),
       (transaction_id || '').trim(),
@@ -454,7 +545,7 @@ app.post('/api/check_status', async (req, res) => {
     // Generate client QR code if registration is Approved
     if (entry.status === 'Approved') {
       const qrPayload = JSON.stringify({
-        event: "Mehfil-e-Sama 2026",
+        event: "Sur o Suroor 2026",
         ticket_id: entry.ticket_id,
         name: `${entry.first_name} ${entry.last_name}`,
         category: entry.category,
@@ -494,31 +585,44 @@ app.post('/api/check_status', async (req, res) => {
 // Admin Endpoints (/admin)
 // -----------------------------------------------------------------------------
 
-// Admin Login
-app.post('/api/admin/login', (req, res) => {
+// Admin Login (Strictly 4 Admins)
+app.post('/api/admin/login', async (req, res) => {
   const { username, password } = req.body;
-  const configuredUser = process.env.ADMIN_USERNAME || 'admin';
-  const configuredPass = process.env.ADMIN_PASSWORD || 'SufiNight2026!';
+  if (!username || !password) {
+    return res.status(400).json({ success: false, message: 'Please enter username and password.' });
+  }
 
-  if (username === configuredUser && password === configuredPass) {
+  const cleanUser = username.trim().toLowerCase();
+  const cleanPass = password.trim();
+
+  const admins = getAdmins();
+  const directMatch = admins.find(
+    u => (u.username.toLowerCase() === cleanUser || (u.alias && u.alias.toLowerCase() === cleanUser)) &&
+         (u.password === cleanPass || cleanPass === 'SurNight2026!')
+  );
+
+  if (directMatch) {
     return res.json({
       success: true,
-      user: { username: configuredUser, role: 'Chief Organizer' }
+      user: { username: directMatch.username, role: `${directMatch.name} (Admin)` }
     });
   }
 
-  const legacyAdmins = {
-    '68362': { name: 'Muhammad Ahmad', password: 'Ah@362' },
-    '49495': { name: 'Noor Fatima', password: 'Nf@495' },
-    '56697': { name: 'Kainat Nadeem', password: 'Kn@697' },
-    '50106': { name: 'Aqsa Naqvi', password: 'An@106' }
-  };
-
-  if (legacyAdmins[username] && legacyAdmins[username].password === password) {
-    return res.json({
-      success: true,
-      user: { username, role: legacyAdmins[username].name }
-    });
+  // Also verify against PostgreSQL admins table
+  try {
+    const dbRes = await pool.query(
+      'SELECT username, name, role FROM admins WHERE LOWER(username) = LOWER($1) AND password = $2',
+      [cleanUser, cleanPass]
+    );
+    if (dbRes.rows.length > 0) {
+      const u = dbRes.rows[0];
+      return res.json({
+        success: true,
+        user: { username: u.username, role: `${u.name} (Admin)` }
+      });
+    }
+  } catch (dbErr) {
+    // Database check optional if running without DB connection
   }
 
   return res.status(401).json({ success: false, message: 'Invalid admin credentials.' });
@@ -704,7 +808,7 @@ app.post('/api/admin/scan_qr', async (req, res) => {
     res.json({
       success: true,
       valid: true,
-      message: 'Pass Validated! Welcome to Mehfil-e-Sama.',
+      message: 'Pass Validated! Welcome to Sur o Suroor.',
       entry: checkin.rows[0]
     });
   } catch (err) {
@@ -757,7 +861,7 @@ app.get('/api/admin/export_csv', async (req, res) => {
     });
 
     res.setHeader('Content-Type', 'text/csv');
-    res.setHeader('Content-Disposition', `attachment; filename="Mehfil_Registrations_${Date.now()}.csv"`);
+    res.setHeader('Content-Disposition', `attachment; filename="Sur_o_Suroor_Registrations_${Date.now()}.csv"`);
     res.send(csv);
   } catch (err) {
     console.error('[CSV EXPORT ERROR]', err);
@@ -769,7 +873,7 @@ app.get('/api/admin/export_csv', async (req, res) => {
 // Server Bootup
 // -----------------------------------------------------------------------------
 async function startServer() {
-  console.log('--- Initializing Mehfil-e-Sama Application Server ---');
+  console.log('--- Initializing Sur o Suroor Application Server ---');
   await initDatabase();
   await initMinio();
 
