@@ -805,6 +805,10 @@ body {
   border-color: var(--gold-primary);
   background: rgba(212, 175, 55, 0.08);
 }
+.dropzone.has-error {
+  border-color: #f43f5e !important;
+  background: rgba(244, 63, 94, 0.1) !important;
+}
 .dropzone i {
   font-size: 28px;
   color: var(--gold-primary);
@@ -901,6 +905,27 @@ body {
   background: rgba(244, 63, 94, 0.15);
   border: 1px solid var(--ruby-bright);
   color: #fda4af;
+}
+
+.referral-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  background: rgba(212, 175, 55, 0.12);
+  border: 1px solid rgba(212, 175, 55, 0.45);
+  color: var(--gold-light);
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 700;
+  padding: 3px 8px;
+  border-radius: 4px;
+  letter-spacing: 0.5px;
+  white-space: nowrap;
+}
+.referral-tag.guest {
+  background: rgba(16, 185, 129, 0.15);
+  border-color: rgba(16, 185, 129, 0.5);
+  color: #6ee7b7;
 }
 
 .pass-qr-frame {

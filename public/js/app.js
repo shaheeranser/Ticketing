@@ -74,6 +74,9 @@ function recalculatePrice() {
   const qrSubtext = document.getElementById('payment-qr-subtext');
   const qrArea = document.getElementById('payment-qr-area');
   const bankArea = document.getElementById('bank-details-area');
+  const transInput = document.getElementById('pay-trans-id');
+  const senderInput = document.getElementById('pay-sender-name');
+  const paymentBox = document.getElementById('payment-box-section');
 
   if (STATE.isGuest) {
     payable = 0;
@@ -89,8 +92,9 @@ function recalculatePrice() {
     }
     if (hiddenFinal) hiddenFinal.value = formatted;
     if (submitBtnText) submitBtnText.textContent = 'Confirm Free Guest Admission';
-    if (qrArea) qrArea.style.display = 'none';
-    if (bankArea) bankArea.style.display = 'none';
+    if (paymentBox) paymentBox.style.display = 'none';
+    if (transInput) transInput.removeAttribute('required');
+    if (senderInput) senderInput.removeAttribute('required');
   } else if (STATE.discountPercent > 0) {
     payable = Math.round(STATE.basePrice * (1 - STATE.discountPercent / 100));
     STATE.finalPrice = payable;
@@ -105,8 +109,11 @@ function recalculatePrice() {
     }
     if (hiddenFinal) hiddenFinal.value = formatted;
     if (submitBtnText) submitBtnText.textContent = `Reserve Pass • ${formatted}`;
+    if (paymentBox) paymentBox.style.display = 'block';
     if (qrArea) qrArea.style.display = 'block';
     if (bankArea) bankArea.style.display = 'block';
+    if (transInput) transInput.setAttribute('required', 'required');
+    if (senderInput) senderInput.setAttribute('required', 'required');
     if (qrImg) qrImg.src = '/images/qr-payment-3000.png';
     if (qrSubtext) qrSubtext.textContent = 'Scan to pay PKR 3,000 via Raast / Banking App';
   } else {
@@ -121,8 +128,11 @@ function recalculatePrice() {
     }
     if (hiddenFinal) hiddenFinal.value = formatted;
     if (submitBtnText) submitBtnText.textContent = `Reserve Pass • ${formatted}`;
+    if (paymentBox) paymentBox.style.display = 'block';
     if (qrArea) qrArea.style.display = 'block';
     if (bankArea) bankArea.style.display = 'block';
+    if (transInput) transInput.setAttribute('required', 'required');
+    if (senderInput) senderInput.setAttribute('required', 'required');
     if (qrImg) qrImg.src = '/images/qr-payment-4000.png';
     if (qrSubtext) qrSubtext.textContent = 'Scan to pay PKR 4,000 via Raast / Banking App';
   }
@@ -243,6 +253,9 @@ function processSelectedFile(file) {
 
   STATE.selectedFile = file;
 
+  const dropzone = document.getElementById('receipt-dropzone');
+  if (dropzone) dropzone.classList.remove('has-error');
+
   const reader = new FileReader();
   reader.onload = (e) => {
     const preview = document.getElementById('preview-image');
@@ -309,6 +322,87 @@ function fallbackCopy(text, cb) {
 async function handleRegistrationSubmit(e) {
   e.preventDefault();
 
+  const firstName = (document.getElementById('reg-first-name')?.value || '').trim();
+  const lastName = (document.getElementById('reg-last-name')?.value || '').trim();
+  const cnic = (document.getElementById('reg-cnic')?.value || '').trim();
+  const email = (document.getElementById('reg-email')?.value || '').trim();
+  const phone = (document.getElementById('reg-phone')?.value || '').trim();
+  const org = (document.getElementById('reg-org')?.value || '').trim();
+  const referralInput = (document.getElementById('reg-referral')?.value || '').trim();
+  const transId = (document.getElementById('pay-trans-id')?.value || '').trim();
+  const senderName = (document.getElementById('pay-sender-name')?.value || '').trim();
+
+  // Validate all attendee personal details
+  if (!firstName) {
+    alert('Please enter your First Name.');
+    document.getElementById('reg-first-name')?.focus();
+    return;
+  }
+  if (!lastName) {
+    alert('Please enter your Last Name.');
+    document.getElementById('reg-last-name')?.focus();
+    return;
+  }
+  if (!cnic) {
+    alert('Please enter your CNIC / National ID.');
+    document.getElementById('reg-cnic')?.focus();
+    return;
+  }
+  const cleanCnic = cnic.replace(/\D/g, '');
+  if (cleanCnic.length < 13) {
+    alert('Please enter a valid 13-digit CNIC number.');
+    document.getElementById('reg-cnic')?.focus();
+    return;
+  }
+  if (!email) {
+    alert('Please enter your Email Address.');
+    document.getElementById('reg-email')?.focus();
+    return;
+  }
+  if (!phone) {
+    alert('Please enter your WhatsApp / Mobile Number.');
+    document.getElementById('reg-phone')?.focus();
+    return;
+  }
+  if (!org) {
+    alert('Please enter your Affiliation / University.');
+    document.getElementById('reg-org')?.focus();
+    return;
+  }
+
+  // If a referral code was typed but not yet applied, apply it before submitting
+  if (referralInput && STATE.discountPercent === 0 && !STATE.isGuest) {
+    await applyReferralCode();
+    if (STATE.discountPercent === 0 && !STATE.isGuest) {
+      alert('The entered referral code is invalid. Please clear it or enter a valid invitation code before submitting.');
+      document.getElementById('reg-referral')?.focus();
+      return;
+    }
+  }
+
+  // Validate payment details for non-guest passes
+  if (!STATE.isGuest) {
+    if (!transId) {
+      alert('Please enter your payment Transaction / Reference ID.');
+      document.getElementById('pay-trans-id')?.focus();
+      return;
+    }
+    if (!senderName) {
+      alert('Please enter your Sender Account Title / Name.');
+      document.getElementById('pay-sender-name')?.focus();
+      return;
+    }
+    if (!STATE.selectedFile) {
+      const dropzone = document.getElementById('receipt-dropzone');
+      if (dropzone) {
+        dropzone.classList.add('has-error');
+        dropzone.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }
+      alert('Payment receipt screenshot is required. Please upload your payment proof screenshot before submitting.');
+      return;
+    }
+  }
+
   const btn = document.getElementById('btn-submit-registration');
   const originalText = btn.innerHTML;
   btn.disabled = true;
@@ -316,17 +410,17 @@ async function handleRegistrationSubmit(e) {
 
   try {
     const formData = new FormData();
-    formData.append('first_name', document.getElementById('reg-first-name').value.trim());
-    formData.append('last_name', document.getElementById('reg-last-name').value.trim());
-    formData.append('cnic', document.getElementById('reg-cnic').value.trim());
-    formData.append('email', document.getElementById('reg-email').value.trim());
-    formData.append('phone', document.getElementById('reg-phone').value.trim());
-    formData.append('organization', document.getElementById('reg-org').value.trim());
+    formData.append('first_name', firstName);
+    formData.append('last_name', lastName);
+    formData.append('cnic', cnic);
+    formData.append('email', email);
+    formData.append('phone', phone);
+    formData.append('organization', org);
     formData.append('category', 'Sur o Suroor Pass');
-    formData.append('referral_code', document.getElementById('reg-referral').value.trim());
+    formData.append('referral_code', referralInput);
     formData.append('fee_amount', document.getElementById('selected-final-price').value);
-    formData.append('transaction_id', document.getElementById('pay-trans-id').value.trim());
-    formData.append('sender_account_title', document.getElementById('pay-sender-name').value.trim());
+    formData.append('transaction_id', transId);
+    formData.append('sender_account_title', senderName);
 
     if (STATE.selectedFile) {
       formData.append('screenshot', STATE.selectedFile);

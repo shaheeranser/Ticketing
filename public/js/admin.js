@@ -98,7 +98,7 @@ function handleAdminLogout() {
 async function loadEntries(showLoading = false) {
   const tbody = document.getElementById('entries-tbody');
   if (showLoading && tbody) {
-    tbody.innerHTML = `<tr><td colspan="8" style="text-align: center; padding: 30px; color: var(--gold-light);">Refreshing records...</td></tr>`;
+    tbody.innerHTML = `<tr><td colspan="9" style="text-align: center; padding: 30px; color: var(--gold-light);">Refreshing records...</td></tr>`;
   }
 
   try {
@@ -129,7 +129,7 @@ async function loadEntries(showLoading = false) {
     renderTableRows(ADMIN_STATE.entries);
   } catch (err) {
     if (tbody) {
-      tbody.innerHTML = `<tr><td colspan="8" style="text-align: center; padding: 30px; color: #f43f5e;">Error: ${err.message}</td></tr>`;
+      tbody.innerHTML = `<tr><td colspan="9" style="text-align: center; padding: 30px; color: #f43f5e;">Error: ${err.message}</td></tr>`;
     }
   }
 }
@@ -141,7 +141,7 @@ function renderTableRows(entries) {
   if (entries.length === 0) {
     tbody.innerHTML = `
       <tr>
-        <td colspan="8" style="text-align: center; padding: 40px; color: var(--text-muted);">
+        <td colspan="9" style="text-align: center; padding: 40px; color: var(--text-muted);">
           No registration records found matching the active criteria.
         </td>
       </tr>
@@ -164,12 +164,38 @@ function renderTableRows(entries) {
       ? '<span style="color: #6ee7b7; font-weight: 700; font-size: 11px;"><i class="fa-solid fa-circle-check"></i> Checked-In</span>'
       : '<span style="color: #94a3b8; font-size: 11px;"><i class="fa-regular fa-clock"></i> Not Scanned</span>';
 
+    // Referral Code Badge
+    let referralCell = '<span style="color: #64748b; font-size: 11px;">Standard (None)</span>';
+    if (r.referral_code && r.referral_code.trim()) {
+      const codeUpper = r.referral_code.trim().toUpperCase();
+      let codeLabel = '';
+      let isGuest = false;
+
+      if (codeUpper === 'AQ_501') codeLabel = 'Aqsa Naqvi';
+      else if (codeUpper === 'MA_683') codeLabel = 'Muhammad Ahmad';
+      else if (codeUpper === 'KN_566') codeLabel = 'Kainat Nadeem';
+      else if (codeUpper === 'NF_494') codeLabel = 'Noor Fatima';
+      else if (codeUpper === 'GU_5654') {
+        codeLabel = 'Special Guest';
+        isGuest = true;
+      }
+
+      referralCell = `
+        <div>
+          <span class="referral-tag ${isGuest ? 'guest' : ''}">
+            <i class="fa-solid fa-tag"></i> ${escapeHtml(codeUpper)}
+          </span>
+          ${codeLabel ? `<div style="font-size: 11px; color: ${isGuest ? '#6ee7b7' : 'var(--gold-light)'}; margin-top: 3px; font-weight: 600;">${escapeHtml(codeLabel)}</div>` : ''}
+        </div>
+      `;
+    }
+
     // Receipt Thumbnail
     let receiptCell = '<span style="color: #64748b; font-size: 12px;">No proof</span>';
     if (r.payment_screenshot_url) {
       receiptCell = `
         <img src="${r.payment_screenshot_url}" class="table-thumb" alt="Receipt" 
-             onclick="openReceiptModal('${r.payment_screenshot_url}', '${escapeHtml(r.transaction_id || 'N/A')}', '${escapeHtml(r.sender_account_title || 'N/A')}', '${escapeHtml(r.sender_bank || 'N/A')}')" 
+             onclick="openReceiptModal('${r.payment_screenshot_url}', '${escapeHtml(r.transaction_id || 'N/A')}', '${escapeHtml(r.sender_account_title || 'N/A')}', '${escapeHtml(r.sender_bank || 'N/A')}', '${escapeHtml(r.referral_code || 'Standard (None)')}')" 
              title="Click to view payment proof">
       `;
     }
@@ -240,6 +266,7 @@ function renderTableRows(entries) {
           <div style="color: var(--gold-light); font-weight: 600;">${escapeHtml(r.category)}</div>
           <div style="font-size: 12px; color: #a1a1aa;">${escapeHtml(r.fee_amount)}</div>
         </td>
+        <td>${referralCell}</td>
         <td>${receiptCell}</td>
         <td>${statusBadge}</td>
         <td>${gateBadge}</td>
@@ -350,17 +377,18 @@ async function deleteEntry(ticketId) {
 // -----------------------------------------------------------------------------
 // Receipt Screenshot Modal
 // -----------------------------------------------------------------------------
-function openReceiptModal(imageUrl, transId, senderTitle, senderBank) {
+function openReceiptModal(imageUrl, transId, senderTitle, senderBank, referralCode) {
   const modal = document.getElementById('receipt-modal');
   const img = document.getElementById('modal-receipt-img');
   const meta = document.getElementById('modal-receipt-meta');
 
   img.src = imageUrl;
   meta.innerHTML = `
-    <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; background: rgba(0,0,0,0.3); padding: 12px; border-radius: 6px;">
-      <div><strong>Transaction ID:</strong><br>${transId}</div>
-      <div><strong>Sender Title:</strong><br>${senderTitle}</div>
-      <div><strong>Sender Bank / Channel:</strong><br>${senderBank}</div>
+    <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; background: rgba(0,0,0,0.4); padding: 14px; border-radius: 8px; border: 1px solid var(--border-gold);">
+      <div><strong style="color: var(--text-muted); font-size: 11px; text-transform: uppercase;">Transaction ID:</strong><br><span style="color: #fff; font-family: var(--font-mono); font-weight: 600;">${transId}</span></div>
+      <div><strong style="color: var(--text-muted); font-size: 11px; text-transform: uppercase;">Sender Title:</strong><br><span style="color: #fff; font-weight: 600;">${senderTitle}</span></div>
+      <div><strong style="color: var(--text-muted); font-size: 11px; text-transform: uppercase;">Channel / Bank:</strong><br><span style="color: #fff;">${senderBank}</span></div>
+      <div><strong style="color: var(--text-muted); font-size: 11px; text-transform: uppercase;">Referral Code Used:</strong><br><span style="color: var(--gold-light); font-weight: 700; font-family: var(--font-mono);">${referralCode || 'Standard (None)'}</span></div>
     </div>
   `;
   modal.classList.add('active');
@@ -447,6 +475,7 @@ async function handleScannedTicket(ticketString) {
         <div style="font-weight: 700; font-size: 15px; margin-bottom: 4px;">✓ PASS VALIDATED — WELCOME!</div>
         <div>Ticket: <strong>${data.entry.ticket_id}</strong> (${data.entry.category})</div>
         <div>Attendee: <strong>${data.entry.first_name} ${data.entry.last_name}</strong></div>
+        ${data.entry.referral_code ? `<div>Referral Code: <strong style="color: var(--gold-light);">${escapeHtml(data.entry.referral_code)}</strong></div>` : ''}
         <div style="font-size: 11px; margin-top: 4px; color: #a7f3d0;">Gate entry recorded at ${new Date().toLocaleTimeString()}</div>
       `;
     } else if (data.already_scanned) {

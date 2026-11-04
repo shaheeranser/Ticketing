@@ -154,9 +154,9 @@
 
             <div class="form-group">
               <label class="form-label" for="reg-org">
-                <i class="fa-regular fa-building text-gold"></i> Affiliation / University (Optional)
+                <i class="fa-regular fa-building text-gold"></i> Affiliation / University *
               </label>
-              <input type="text" id="reg-org" class="form-input" placeholder="e.g. LUMS / NCA / Heritage Trust">
+              <input type="text" id="reg-org" class="form-input" required placeholder="e.g. LUMS / NCA / Heritage Trust">
             </div>
           </div>
 
@@ -255,19 +255,25 @@
             <!-- Verification Fields -->
             <div class="form-grid" style="margin-bottom: 14px;">
               <div class="form-group">
-                <label class="form-label" for="pay-trans-id">Transaction / Reference ID</label>
-                <input type="text" id="pay-trans-id" class="form-input" placeholder="e.g. 9876543210 or TRX-12345">
+                <label class="form-label" for="pay-trans-id">
+                  <i class="fa-solid fa-receipt text-gold"></i> Transaction / Reference ID *
+                </label>
+                <input type="text" id="pay-trans-id" class="form-input" required placeholder="e.g. 9876543210 or TRX-12345">
               </div>
 
               <div class="form-group">
-                <label class="form-label" for="pay-sender-name">Sender Account Title / Name</label>
-                <input type="text" id="pay-sender-name" class="form-input" placeholder="e.g. Bilal Chishti">
+                <label class="form-label" for="pay-sender-name">
+                  <i class="fa-regular fa-user text-gold"></i> Sender Account Title / Name *
+                </label>
+                <input type="text" id="pay-sender-name" class="form-input" required placeholder="e.g. Bilal Chishti">
               </div>
             </div>
 
             <!-- Receipt Screenshot Dropzone -->
             <div class="form-group full-width">
-              <label class="form-label">Payment Receipt Screenshot</label>
+              <label class="form-label" id="receipt-label">
+                <i class="fa-regular fa-image text-gold"></i> Payment Receipt Screenshot *
+              </label>
               <div class="dropzone" id="receipt-dropzone" onclick="document.getElementById('receipt-file').click()">
                 <i class="fa-solid fa-cloud-arrow-up"></i>
                 <div class="dropzone-text">Click or drag & drop payment screenshot here</div>

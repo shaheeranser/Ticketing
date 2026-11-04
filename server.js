@@ -398,14 +398,42 @@ app.post('/api/register', upload.single('screenshot'), async (req, res) => {
       transaction_id
     } = req.body;
 
-    // Validation
-    if (!first_name || !last_name || !cnic || !email || !phone) {
-      return res.status(400).json({ success: false, error: 'Please provide all mandatory personal details.' });
+    // Mandatory fields validation
+    if (!first_name || !first_name.trim() ||
+        !last_name || !last_name.trim() ||
+        !cnic || !cnic.trim() ||
+        !email || !email.trim() ||
+        !phone || !phone.trim() ||
+        !organization || !organization.trim()) {
+      return res.status(400).json({ success: false, error: 'Please provide all mandatory attendee details, including Affiliation / University.' });
     }
 
     const cleanCnic = cnic.replace(/[^0-9]/g, '');
     if (cleanCnic.length < 13) {
       return res.status(400).json({ success: false, error: 'Please enter a valid 13-digit CNIC.' });
+    }
+
+    // Determine referral code validity
+    const upperRef = (referral_code || '').trim().toUpperCase();
+    const { codes25, codesFree } = getPromoCodes();
+    const isGuestCode = codesFree.includes(upperRef);
+    const isDiscountCode = codes25.includes(upperRef);
+
+    if (upperRef && !isGuestCode && !isDiscountCode) {
+      return res.status(400).json({ success: false, error: 'The referral code entered is invalid or expired.' });
+    }
+
+    // Payment fields are strictly required for paid passes (non-guest passes)
+    if (!isGuestCode) {
+      if (!transaction_id || !transaction_id.trim()) {
+        return res.status(400).json({ success: false, error: 'Payment Transaction / Reference ID is required.' });
+      }
+      if (!sender_account_title || !sender_account_title.trim()) {
+        return res.status(400).json({ success: false, error: 'Sender Account Title / Name is required.' });
+      }
+      if (!req.file) {
+        return res.status(400).json({ success: false, error: 'Payment receipt screenshot is required. Please upload your payment screenshot.' });
+      }
     }
 
     // Check duplicate active registrations
@@ -446,13 +474,6 @@ app.post('/api/register', upload.single('screenshot'), async (req, res) => {
     // Generate Unique Ticket ID: SUR-XXXXXX
     const randomHex = crypto.randomBytes(3).toString('hex').toUpperCase();
     const ticketId = `SUR-${randomHex}`;
-
-    // Determine initial status & fee based on referral code
-    const upperRef = (referral_code || '').trim().toUpperCase();
-    const { codes25, codesFree } = getPromoCodes();
-
-    const isGuestCode = codesFree.includes(upperRef);
-    const isDiscountCode = codes25.includes(upperRef);
 
     // Guest entries also require committee approval before pass issuance
     const initialStatus = 'Pending';
@@ -644,7 +665,8 @@ app.get('/api/admin/entries', async (req, res) => {
         LOWER(last_name) LIKE $${params.length} OR
         LOWER(email) LIKE $${params.length} OR
         cnic LIKE $${params.length} OR
-        LOWER(transaction_id) LIKE $${params.length}
+        LOWER(transaction_id) LIKE $${params.length} OR
+        LOWER(referral_code) LIKE $${params.length}
       )`;
     }
 
