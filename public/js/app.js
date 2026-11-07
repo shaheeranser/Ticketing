@@ -112,7 +112,6 @@ function recalculatePrice() {
     if (paymentBox) paymentBox.style.display = 'block';
     if (qrArea) qrArea.style.display = 'block';
     if (bankArea) bankArea.style.display = 'block';
-    if (transInput) transInput.setAttribute('required', 'required');
     if (senderInput) senderInput.setAttribute('required', 'required');
     if (qrImg) qrImg.src = '/images/qr-payment-3000.png';
     if (qrSubtext) qrSubtext.textContent = 'Scan to pay PKR 3,000 via Raast / Banking App';
@@ -131,7 +130,6 @@ function recalculatePrice() {
     if (paymentBox) paymentBox.style.display = 'block';
     if (qrArea) qrArea.style.display = 'block';
     if (bankArea) bankArea.style.display = 'block';
-    if (transInput) transInput.setAttribute('required', 'required');
     if (senderInput) senderInput.setAttribute('required', 'required');
     if (qrImg) qrImg.src = '/images/qr-payment-4000.png';
     if (qrSubtext) qrSubtext.textContent = 'Scan to pay PKR 4,000 via Raast / Banking App';
@@ -382,11 +380,6 @@ async function handleRegistrationSubmit(e) {
 
   // Validate payment details for non-guest passes
   if (!STATE.isGuest) {
-    if (!transId) {
-      alert('Please enter your payment Transaction / Reference ID.');
-      document.getElementById('pay-trans-id')?.focus();
-      return;
-    }
     if (!senderName) {
       alert('Please enter your Sender Account Title / Name.');
       document.getElementById('pay-sender-name')?.focus();

@@ -425,9 +425,6 @@ app.post('/api/register', upload.single('screenshot'), async (req, res) => {
 
     // Payment fields are strictly required for paid passes (non-guest passes)
     if (!isGuestCode) {
-      if (!transaction_id || !transaction_id.trim()) {
-        return res.status(400).json({ success: false, error: 'Payment Transaction / Reference ID is required.' });
-      }
       if (!sender_account_title || !sender_account_title.trim()) {
         return res.status(400).json({ success: false, error: 'Sender Account Title / Name is required.' });
       }
