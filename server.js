@@ -105,7 +105,7 @@ function getEmailTemplate() {
     cachedEmailTemplate = fs.readFileSync(EMAIL_TEMPLATE_PATH, 'utf8');
   } catch (err) {
     console.error('[EMAIL TEMPLATE ERROR] Could not read template file:', err.message);
-    cachedEmailTemplate = '<h2>Sur o Suroor Pass Confirmed</h2><p>Ticket: {{TICKET_ID}}</p><img src="cid:{{QR_CID}}" />';
+    cachedEmailTemplate = '<h2>Sur o Suroor Pass Confirmed</h2><p>Ticket: {{TICKET_ID}}</p><p>Date: {{EVENT_DATE}} | Entry Time: {{EVENT_TIME}}</p><p>Venue: {{EVENT_VENUE}}</p><img src="cid:{{QR_CID}}" />';
   }
   return cachedEmailTemplate;
 }
@@ -264,9 +264,9 @@ function renderEmailTemplate(entry) {
     .replace(/{{FEE_AMOUNT}}/g, feeAmount)
     .replace(/{{PASS_CATEGORY}}/g, category)
     .replace(/{{QR_CID}}/g, 'ticket_qr_code')
-    .replace(/{{EVENT_DATE}}/g, 'TBA')
-    .replace(/{{EVENT_TIME}}/g, 'TBA')
-    .replace(/{{EVENT_VENUE}}/g, 'Gulberg, TBA');
+    .replace(/{{EVENT_DATE}}/g, process.env.EVENT_DATE || 'December 12th')
+    .replace(/{{EVENT_TIME}}/g, process.env.EVENT_TIME || '3:00 PM')
+    .replace(/{{EVENT_VENUE}}/g, process.env.EVENT_VENUE || 'Nine Tree Luxury Hotel & Suites, Gulberg');
 }
 
 async function sendSufiTicketEmail(entry) {

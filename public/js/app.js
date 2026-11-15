@@ -591,17 +591,21 @@ function renderPassCard(entry, container) {
           </div>
         </div>
         <div class="pass-meta-item">
-          <div class="label">Date & Time</div>
-          <div class="val">TBA</div>
+          <div class="label">Date</div>
+          <div class="val">December 12th</div>
         </div>
         <div class="pass-meta-item">
+          <div class="label">Entry Time</div>
+          <div class="val">3:00 PM</div>
+        </div>
+        <div class="pass-meta-item" style="grid-column: 1 / -1;">
           <div class="label">Venue</div>
-          <div class="val">Gulberg, TBA</div>
+          <div class="val">Nine Tree Luxury Hotel & Suites, Gulberg</div>
         </div>
       </div>
 
       <div style="font-size: 11px; color: var(--text-muted); border-top: 1px dashed var(--border-gold); padding-top: 10px; margin-top: 14px;">
-        Venue: Gulberg, TBA • Date & Time: TBA • Physical CNIC required for admission
+        Venue: Nine Tree Luxury Hotel & Suites, Gulberg • Date: December 12th • Entry Time: 3:00 PM • Physical CNIC required for admission
       </div>
     </div>
   `;
